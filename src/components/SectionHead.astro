@@ -1,0 +1,64 @@
+---
+interface Props {
+  idx: string;
+  id: string;
+  size?: 'lg' | 'md';
+}
+const { idx, id, size = 'lg' } = Astro.props;
+const hasLede = Astro.slots.has('lede');
+---
+
+<header class:list={['sec-head', 'draw', size]}>
+  <span class="idx mono">{idx}</span>
+  <div>
+    <h2 id={id} data-reveal><slot /></h2>
+    {hasLede && <p class="lede" data-reveal><slot name="lede" /></p>}
+  </div>
+</header>
+
+<style>
+  .sec-head {
+    display: grid;
+    grid-template-columns: minmax(110px, 0.16fr) 1fr;
+    gap: 12px 24px;
+    padding-top: 28px;
+    margin-bottom: clamp(32px, 6vh, 64px);
+  }
+  .idx {
+    font-size: 12px;
+    line-height: 1.4;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    padding-top: 1em;
+    text-transform: uppercase;
+  }
+  h2 {
+    font-weight: 650;
+    font-size: clamp(32px, 5vw, 72px);
+    line-height: 1;
+    letter-spacing: -0.045em;
+  }
+  .md h2 {
+    font-size: clamp(28px, 3.8vw, 54px);
+    letter-spacing: -0.04em;
+  }
+  h2 :global(em) {
+    font: italic 500 1.03em var(--font-serif);
+    letter-spacing: -0.03em;
+    color: var(--accent);
+  }
+  .lede {
+    margin-top: 20px;
+    max-width: 40em;
+    color: var(--muted);
+    font-size: clamp(17px, 1.35vw, 20px);
+  }
+  @media (max-width: 900px) {
+    .sec-head {
+      grid-template-columns: 1fr;
+    }
+    .idx {
+      padding-top: 0;
+    }
+  }
+</style>

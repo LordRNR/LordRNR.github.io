@@ -1,0 +1,241 @@
+---
+/**
+ * R per walk-forward fold for one strategy (zero baseline, columns grow from it).
+ * Folds without trades are not drawn; the caption says how many folds had trades.
+ */
+interface Fold {
+  start: string; // "2025-01"
+  trades: number;
+  r: number;
+}
+interface Props {
+  folds: Fold[];
+  foldsTotal: number;
+  highlightYear?: string;
+  highlightLabel: string;
+  source: string;
+}
+const { folds, foldsTotal, highlightYear, highlightLabel, source } = Astro.props;
+const lo = Math.min(-5, Math.floor(Math.min(...folds.map((f) => f.r)) / 5) * 5);
+const hi = Math.max(5, Math.ceil(Math.max(...folds.map((f) => f.r)) / 5) * 5) + 1;
+const span = hi - lo;
+const top = (v: number) => ((hi - v) / span) * 100; // % from the top for a value
+const zero = top(0);
+const ticks: number[] = [];
+for (let t = lo; t <= hi - 1; t += 5) ticks.push(t);
+const q = (s: string) => `Q${Math.ceil(Number(s.slice(5)) / 3)}`;
+const yy = (s: string) => s.slice(2, 4);
+const fmt = (v: number) => `${v > 0 ? '+' : '−'}${Math.abs(v).toFixed(2)}`;
+const maxR = Math.max(...folds.map((f) => f.r));
+const minR = Math.min(...folds.map((f) => f.r));
+const total = folds.reduce((a, f) => a + f.r, 0);
+const hlTotal = folds.filter((f) => highlightYear && f.start.startsWith(highlightYear)).reduce((a, f) => a + f.r, 0);
+const alt = `Column chart of R per walk-forward fold. ${folds.length} of ${foldsTotal} folds had trades. ${highlightYear ? `The ${highlightYear} folds supplied ${fmt(hlTotal)} R of ${fmt(total)} R in total.` : ''}`;
+---
+
+<div class="chart" data-inview>
+  <div class="cols" role="img" aria-label={alt}>
+    <div class="plot">
+      {ticks.map((t) => <i class:list={['gl', { zero: t === 0 }]} style={`top:${top(t)}%`} data-l={t > 0 ? `+${t}` : `${t}`}></i>)}
+      <div class="crow" style={`grid-template-columns:repeat(${folds.length},1fr)`}>
+        {
+          folds.map((f, i) => {
+            const pos = f.r >= 0;
+            const h = (Math.abs(f.r) / span) * 100;
+            const extreme = f.r === maxR || f.r === minR;
+            return (
+              <div class="col" style={`--i:${i}`}>
+                <b
+                  class:list={['cb', pos ? 'pos' : 'neg', { hl: highlightYear && f.start.startsWith(highlightYear) }]}
+                  style={pos ? `bottom:${100 - zero}%;height:${h}%` : `top:${zero}%;height:${h}%`}
+                  tabindex="0"
+                  data-tip={`${f.start.slice(0, 4)} ${q(f.start)} · ${f.trades} trades · ${fmt(f.r)} R`}
+                />
+                {extreme && <span class="cv mono" style={pos ? `bottom:calc(${100 - zero}% + ${h}% + 6px)` : `top:calc(${zero}% + ${h}% + 6px)`}>{fmt(f.r)}</span>}
+                <span class="cl mono">{q(f.start)}<br />{yy(f.start)}</span>
+              </div>
+            );
+          })
+        }
+      </div>
+    </div>
+  </div>
+
+  <p class="legend">
+    {highlightYear && <span><i class="k hl"></i>{highlightLabel}: {fmt(hlTotal)} R of {fmt(total)} R</span>}
+    <span><i class="k"></i>Other folds with trades</span>
+    <span class="count">{folds.length} of {foldsTotal} folds had trades</span>
+  </p>
+
+  <details class="tbl">
+    <summary>View as table</summary>
+    <table>
+      <thead><tr><th>Fold (test start)</th><th>Trades</th><th>R</th></tr></thead>
+      <tbody>{folds.map((f) => <tr><td>{f.start.slice(0, 4)} {q(f.start)}</td><td>{f.trades}</td><td>{fmt(f.r)}</td></tr>)}</tbody>
+    </table>
+  </details>
+  <p class="src mono">Source: {source}</p>
+</div>
+
+<script>
+  import '../../scripts/tooltip.ts';
+</script>
+
+<style>
+  .cols {
+    padding: 14px 0 44px 32px;
+  }
+  .plot {
+    position: relative;
+    height: 220px;
+  }
+  .gl {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 0;
+    border-top: 1px solid var(--line);
+  }
+  .gl.zero {
+    border-top-color: var(--line-strong);
+  }
+  .gl::before {
+    content: attr(data-l);
+    position: absolute;
+    left: -32px;
+    top: -6px;
+    font: 500 10px/1 var(--font-mono);
+    color: var(--faint);
+  }
+  .crow {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    gap: clamp(6px, 1.1vw, 14px);
+  }
+  .col {
+    position: relative;
+    height: 100%;
+  }
+  .cb {
+    position: absolute;
+    left: 50%;
+    translate: -50% 0;
+    width: min(72%, 24px);
+    background: color-mix(in srgb, var(--ink) 32%, transparent);
+  }
+  .cb.pos {
+    border-radius: 4px 4px 0 0;
+    transform-origin: bottom;
+  }
+  .cb.neg {
+    border-radius: 0 0 4px 4px;
+    transform-origin: top;
+  }
+  .cb.hl {
+    background: var(--accent);
+  }
+  :global(.js) .cb {
+    transform: scaleY(0);
+    transition: transform 1s var(--ease-io) calc(var(--i) * 0.09s);
+  }
+  :global(.js) .chart.in .cb {
+    transform: scaleY(1);
+  }
+  .cl {
+    position: absolute;
+    left: 50%;
+    translate: -50% 0;
+    top: calc(100% + 12px);
+    font-size: 10px;
+    line-height: 1.35;
+    text-align: center;
+    color: var(--faint);
+    white-space: nowrap;
+  }
+  .cv {
+    position: absolute;
+    left: 50%;
+    translate: -50% 0;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  :global(.js) .cv {
+    opacity: 0;
+    transition: opacity 0.6s 1.1s;
+  }
+  :global(.js) .chart.in .cv {
+    opacity: 1;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .legend span {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .k {
+    display: block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--ink) 32%, transparent);
+  }
+  .k.hl {
+    background: var(--accent);
+  }
+  .count {
+    margin-left: auto;
+  }
+  .tbl {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .tbl summary {
+    width: max-content;
+    padding: 6px 0;
+    cursor: pointer;
+    font: 500 11.5px/1 var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--line);
+  }
+  .tbl table {
+    width: 100%;
+    margin-top: 10px;
+    border-collapse: collapse;
+  }
+  .tbl th,
+  .tbl td {
+    padding: 8px 6px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    font-weight: 400;
+  }
+  .tbl th {
+    font: 600 10.5px var(--font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .src {
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--faint);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(.js) .cb {
+      transform: none;
+    }
+    :global(.js) .cv {
+      opacity: 1;
+    }
+  }
+</style>

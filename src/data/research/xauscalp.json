@@ -1,0 +1,123 @@
+{
+  "_comment": "Verified research data for the xauscalp case study. Every block has a source file inside the xauscalp repository. Values were transcribed from the reports on the date in asOf.",
+  "asOf": "2026-11-16",
+  "tests": { "collected": 727, "passed": 727, "skipped": 0, "files": 28, "method": "pytest in a clean export of the private development repository, Python 3.12.10, no market data, no network; run 2026-11-16", "publicPassed": 636, "publicFiles": 24 },
+  "study7": {
+    "title": "Opening-range breakout on broker history",
+    "units": "R per trade (R = the amount risked per trade)",
+    "coveragePct": 98.1,
+    "folds": 15,
+    "domain": [-0.6, 0.1],
+    "source": "reports/07_orb_broker_eval.md",
+    "primary": "B_base",
+    "scenarios": [
+      { "id": "A_demo_as_is", "label": "Demo costs as-is", "trades": 1172, "value": -0.0613, "ci": [-0.1213, -0.0017], "zeroCost": -0.0283 },
+      { "id": "B_base", "label": "Base costs (primary)", "trades": 222, "value": -0.113, "ci": [-0.2527, 0.0264], "zeroCost": -0.023475 },
+      { "id": "C_stress", "label": "Stress costs", "trades": 84, "value": -0.2897, "ci": [-0.5468, -0.0184], "zeroCost": -0.1726 }
+    ]
+  },
+  "study8": {
+    "title": "Four preregistered strategy families",
+    "configurations": 22,
+    "source": "reports/08_alt_strategies.md",
+    "families": [
+      { "id": "trend_donchian", "label": "Trend (Donchian, H1)", "trades": 159, "expectancy": 0.2421, "ciLow": -0.0241, "p": 0.016, "meetsAll": false },
+      { "id": "momentum_tsmom", "label": "Momentum", "trades": 578, "expectancy": -0.0482, "ciLow": -0.1382, "p": 0.6727, "meetsAll": false },
+      { "id": "pullback", "label": "Pullback", "trades": 267, "expectancy": 0.0168, "ciLow": -0.1329, "p": 0.1816, "meetsAll": false },
+      { "id": "mean_reversion", "label": "Mean reversion", "trades": 48, "expectancy": -0.113, "ciLow": -0.3745, "p": 0.7126, "meetsAll": false }
+    ],
+    "donchian": {
+      "trades": 159,
+      "ci": [-0.024, 0.534],
+      "criteria": [
+        { "n": 1, "text": "Validable: at least 4 folds", "pass": true, "data": "15 folds" },
+        { "n": 2, "text": "At least 150 trades", "pass": true, "data": "159 trades" },
+        { "n": 3, "text": "95% interval (weekly blocks) above zero", "pass": false, "data": "[−0.02, +0.53]" },
+        { "n": 4, "text": "p versus random direction below 0.0125", "pass": false, "data": "p = 0.016" },
+        { "n": 5, "text": "Positive expectancy at stress costs", "pass": true, "data": "+0.21 R" },
+        { "n": 6, "text": "At least 60% of folds and 3 of 5 years positive", "pass": false, "data": "67% of folds, 2 of 3 years" },
+        { "n": 7, "text": "Reversed direction is negative", "pass": true, "data": "−0.08 R" },
+        { "n": 8, "text": "Reproducible (same hash in two runs)", "pass": true, "data": "identical" }
+      ],
+      "foldsWithTrades": 9,
+      "foldsTotal": 15,
+      "folds": [
+        { "start": "2022-01", "trades": 17, "r": 0.18 },
+        { "start": "2022-04", "trades": 17, "r": -4.07 },
+        { "start": "2024-01", "trades": 17, "r": -0.81 },
+        { "start": "2024-04", "trades": 13, "r": -1.28 },
+        { "start": "2024-07", "trades": 13, "r": 7.06 },
+        { "start": "2024-10", "trades": 17, "r": 0.43 },
+        { "start": "2025-01", "trades": 19, "r": 15.28 },
+        { "start": "2025-04", "trades": 21, "r": 13.05 },
+        { "start": "2025-07", "trades": 25, "r": 8.64 }
+      ],
+      "totalR": 38.5,
+      "r2025": 37.0,
+      "longs": { "trades": 92, "totalR": 58.4, "avgR": 0.63 },
+      "shorts": { "trades": 67, "totalR": -19.9, "avgR": -0.3 },
+      "top5Share": 0.71,
+      "expectancyWithoutTop5": 0.07,
+      "postHocNote": "Post-hoc diagnostic, run after the results were known. It does not change the verdict and was not used to choose anything."
+    },
+    "meanReversion": { "trades": 48, "foldsWithTrades": 1, "foldsTotal": 15, "totalR": -5.42 }
+  },
+  "study9": {
+    "title": "Simulated two-step prop-firm challenge",
+    "source": "reports/09_propfirm_feasibility.md",
+    "riskPct": 0.5,
+    "weeks": 104,
+    "rows": [
+      { "label": "Donchian trend", "pass": 49.2, "passCi": [9.0, 87.5], "nullPass": 9.0 },
+      { "label": "Pullback", "pass": 17.5, "passCi": [0.5, 65.3], "nullPass": 9.8 },
+      { "label": "Momentum", "pass": 3.5, "passCi": [0.0, 35.2], "nullPass": 15.0 },
+      { "label": "Opening-range breakout", "pass": 0.0, "passCi": [0.0, 5.5], "nullPass": 8.5 }
+    ]
+  },
+  "parity": {
+    "source": "reports/parity/README.md",
+    "sessions": 90,
+    "signal": 88,
+    "noBreakout": 2,
+    "hardDifferences": 0,
+    "caveat": "This shows calculation equivalence, not profitability. The trigger fired on 88 of the 90 sessions, so signal parity is not a selective test.",
+    "runs": [
+      { "id": "parity1", "result": "invalid", "text": "Not interpretable: duplicated log rows" },
+      { "id": "parity2", "result": "fail", "text": "2 hard differences: an indicator window measured in wall-clock time" },
+      { "id": "parity3", "result": "partial", "text": "0 hard differences; 2 sessions missing (the tester excludes its end date)" },
+      { "id": "parity4", "result": "partial", "text": "Partial diagnostic run, not used as evidence" },
+      { "id": "parity5", "result": "ok", "text": "Equivalent on 90 day-sessions" }
+    ]
+  },
+  "audits": [
+    { "id": "R1", "severity": "critical", "title": "The risk manager approved trades when spread, data age or free margin was NaN", "status": "fixed, with regression tests" },
+    { "id": "T1", "severity": "high", "title": "One timezone offset applied to the whole history, an hour wrong for half the year", "status": "fixed" },
+    { "id": "D1", "severity": "high", "title": "A 1,648-day data gap treated as consecutive bars", "status": "fixed" },
+    { "id": "W1", "severity": "high", "title": "Walk-forward result concatenated trades that could overlap", "status": "fixed" },
+    { "id": "H1", "severity": "medium", "title": "A loader decoded files from the locked holdout period before trimming them", "status": "fixed; readers stop at the research boundary, enforced by a static test" }
+  ],
+  "auditSource": "docs/auditoria_2026-11-12.md",
+  "dryRun": { "signals": 88, "orderChecks": 52, "ordersSent": 0, "historical": true, "source": "docs/decisiones.md, ADR 37 (a documented result of the development repository; the order-sending component and its evidence files are not published)" },
+  "limits": [
+    "Mandatory stop-loss on every trade",
+    "0.5% risk per trade",
+    "−2% daily and −5% weekly loss limits",
+    "Drawdown lock at −8% from the peak",
+    "At most 3 trades per day and one position at a time; no martingale, grid or averaging",
+    "Volume always rounded down; invalid input means rejection",
+    "Demo accounts only; live trading disabled in code"
+  ],
+  "hardCaps": [
+    "Risk per trade at most 1%",
+    "Daily loss limit at most 3%, weekly at most 6%",
+    "Drawdown lock at most 10%",
+    "At most 10 trades per day and one open position",
+    "Margin usage at most 50%"
+  ],
+  "limitations": [
+    "Level-1 simulation on one-minute bars; the Strategy Tester was modelled from those bars, not from real ticks.",
+    "Broker history came from a demo feed with derived ask prices and optimistic spreads.",
+    "One instrument family over a short period, and no demo or live order trading.",
+    "Multi-asset research is designed and unit-tested on synthetic data; it was not run."
+  ]
+}

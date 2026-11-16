@@ -1,0 +1,73 @@
+---
+import EmailLink from './EmailLink.astro';
+import { contact, nav, site } from '../lib/site';
+const year = new Date().getFullYear();
+---
+
+<footer class="foot">
+  <div class="wrap row">
+    <div>
+      <p class="who"><strong>{site.name}</strong></p>
+      <p class="muted">{site.role}</p>
+    </div>
+    <nav aria-label="Footer">
+      <ul>
+        {nav.filter((n) => !n.href.includes('#')).map((n) => <li><a href={n.href}>{n.label}</a></li>)}
+        <li><a href={contact.github} rel="noopener">GitHub</a></li>
+        {contact.email && <li><EmailLink email={contact.email} /></li>}
+        {contact.linkedin && <li><a href={contact.linkedin} rel="noopener">LinkedIn</a></li>}
+      </ul>
+    </nav>
+    <p class="small mono">© {year} {site.name} · No trackers, no cookies</p>
+  </div>
+</footer>
+
+<style>
+  .foot {
+    border-top: 1px solid var(--line);
+    padding: 36px 0 56px;
+    margin-top: var(--section-y);
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px 40px;
+    align-items: start;
+  }
+  .who {
+    font-size: 17px;
+  }
+  .muted {
+    color: var(--muted);
+    font-size: 15px;
+  }
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+    justify-content: flex-end;
+  }
+  a {
+    color: var(--muted);
+    transition: color 0.3s;
+    padding: 6px 0;
+    display: inline-block;
+  }
+  a:hover {
+    color: var(--ink);
+  }
+  .small {
+    grid-column: 1 / -1;
+    color: var(--faint);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+  }
+  @media (max-width: 700px) {
+    .row {
+      grid-template-columns: 1fr;
+    }
+    ul {
+      justify-content: flex-start;
+    }
+  }
+</style>

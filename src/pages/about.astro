@@ -1,0 +1,266 @@
+---
+import Base from '../layouts/Base.astro';
+import Contribution from '../components/Contribution.astro';
+import EmailLink from '../components/EmailLink.astro';
+import { copy } from '../data/copy';
+import { contact, site } from '../lib/site';
+import { getProjects } from '../lib/projects';
+
+const projects = await getProjects();
+const e = site.education;
+// Tools table: every technology, with the projects that use it. Derived, never typed by hand.
+const tools = new Map<string, string[]>();
+projects.forEach((p) => p.data.tech.forEach((t) => tools.set(t, [...(tools.get(t) ?? []), p.data.name])));
+const toolRows = [...tools.entries()].sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+// Human/assisted statements aggregated across projects (deduplicated).
+const human = [...new Set(projects.flatMap((p) => p.data.contribution.human))];
+const assisted = [...new Set(projects.flatMap((p) => p.data.contribution.assisted))];
+---
+
+<Base title="About" description="Who I am, how I work with AI assistance, and what gets verified.">
+  <div class="wrap page">
+    <header class="head">
+      <p class="eyebrow mono">About</p>
+      <h1>{site.name}. <em>Builder first</em>, honest about the results.</h1>
+      <p class="lede">{copy.who.statement}</p>
+    </header>
+
+    <section class="block" aria-labelledby="edu">
+      <h2 id="edu" class="mono">Education</h2>
+      <p class="big">{e.degree}</p>
+      <p class="muted">{e.institution}, {e.track}{e.start && e.expectedEnd ? ` · ${e.start}–${e.expectedEnd}` : ''}</p>
+      <p class="muted">Interests: {copy.who.interests}.</p>
+    </section>
+
+    <section class="block" id="process" aria-labelledby="proc">
+      <h2 id="proc" class="mono">How I work</h2>
+      <p class="big">{copy.process.lede}</p>
+      <ol class="cols" data-stagger>
+        {
+          copy.process.columns.map((c, i) => (
+            <li class={`col ${c.key}`}>
+              <span class="num mono">{String(i + 1).padStart(2, '0')}</span>
+              <h3>{c.title}</h3>
+              <p>{c.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+      <h3 class="sub mono">Across my projects</h3>
+      <Contribution human={human} assisted={assisted} />
+    </section>
+
+    <section class="block" aria-labelledby="meth">
+      <h2 id="meth" class="mono">Three words</h2>
+      <p class="big">{copy.method.lede}</p>
+      <ul class="defs">
+        {copy.method.definitions.map((d) => <li><b class="mono">{d.state}</b><span><strong>{d.title}</strong> {d.text}</span></li>)}
+      </ul>
+    </section>
+
+    <section class="block" aria-labelledby="tools">
+      <h2 id="tools" class="mono">Technologies in my projects</h2>
+      <p class="tools-note">Used in the projects listed here, where the code is written with Claude Code. Listing a technology is not a claim of independent expertise.</p>
+      <table class="t">
+        <caption class="sr-only">Technologies and the projects that use them</caption>
+        <thead><tr><th>Technology</th><th>Used in</th></tr></thead>
+        <tbody>{toolRows.map(([t, ps]) => <tr><th scope="row">{t}</th><td>{ps.join(' · ')}</td></tr>)}</tbody>
+      </table>
+    </section>
+
+    <section class="block" aria-labelledby="touch">
+      <h2 id="touch" class="mono">Get in touch</h2>
+      <p class="big">{copy.contact.lede}</p>
+      <p class="links">
+        <a href={contact.github} rel="noopener">github.com/{site.handle} <span aria-hidden="true">↗</span></a>
+        {contact.email && <EmailLink email={contact.email} />}
+        {contact.linkedin && <a href={contact.linkedin} rel="noopener">LinkedIn <span aria-hidden="true">↗</span></a>}
+      </p>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .page {
+    padding: calc(var(--nav-h) + clamp(32px, 7vh, 80px)) 0 0;
+  }
+  .head {
+    margin-bottom: clamp(32px, 6vh, 64px);
+  }
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  h1 {
+    margin-top: 16px;
+    max-width: 13em;
+    font-weight: 650;
+    font-size: clamp(38px, 6.4vw, 96px);
+    line-height: 0.98;
+    letter-spacing: -0.05em;
+  }
+  h1 em {
+    font: italic 500 1.02em var(--font-serif);
+    letter-spacing: -0.03em;
+    color: var(--accent);
+  }
+  .lede {
+    margin-top: 22px;
+    max-width: 36em;
+    color: var(--muted);
+    font-size: clamp(18px, 1.6vw, 24px);
+    line-height: 1.5;
+  }
+  .block {
+    padding: clamp(32px, 6vh, 56px) 0;
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: 14px;
+  }
+  .block > h2 {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--muted);
+  }
+  .big {
+    max-width: 30em;
+    font-size: clamp(22px, 2.4vw, 34px);
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+    font-weight: 560;
+  }
+  .muted {
+    color: var(--muted);
+  }
+  .cols {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .col {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    padding: 20px 18px 22px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .col.human {
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  .num {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--faint);
+  }
+  .col h3 {
+    font-size: 19px;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+  .col p {
+    color: var(--muted);
+    font-size: 15px;
+  }
+  .sub {
+    margin-top: 18px;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--muted);
+  }
+  .defs {
+    display: grid;
+    border-top: 1px solid var(--line);
+    max-width: 54em;
+  }
+  .defs li {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+  }
+  .defs b {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .defs strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .tools-note {
+    max-width: 54em;
+    margin-bottom: 14px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .t {
+    width: 100%;
+    max-width: 54em;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+  .t th,
+  .t td {
+    padding: 12px 10px 12px 0;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    font-weight: 400;
+  }
+  .t thead th {
+    font: 600 10.5px var(--font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .t tbody th {
+    font-weight: 500;
+    width: 40%;
+  }
+  .t td {
+    color: var(--muted);
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 26px;
+  }
+  .links a {
+    padding: 10px 0;
+    font-weight: 500;
+    border-bottom: 1px solid var(--line-strong);
+    transition:
+      color 0.3s,
+      border-color 0.3s;
+  }
+  .links a:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  @media (max-width: 1100px) {
+    .cols {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 600px) {
+    .cols {
+      grid-template-columns: 1fr;
+    }
+    .defs li {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+  }
+</style>

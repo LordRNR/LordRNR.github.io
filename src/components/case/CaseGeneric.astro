@@ -1,0 +1,121 @@
+---
+import CaseHero from '../CaseHero.astro';
+import CaseSection from '../CaseSection.astro';
+import CaseNav from '../CaseNav.astro';
+import Prose from '../Prose.astro';
+import Figure from '../Figure.astro';
+import Ledger from '../Ledger.astro';
+import NoteCard from '../NoteCard.astro';
+import Metrics from '../Metrics.astro';
+import Contribution from '../Contribution.astro';
+import Tag from '../Tag.astro';
+import { publicEvidence, type Project } from '../../lib/projects';
+
+/**
+ * Default case study for any project: it renders only the sections the project actually has data for,
+ * so a new project can ship with just a Markdown file and grow over time.
+ */
+interface Props {
+  project: Project;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Content: any;
+}
+const { project, Content } = Astro.props;
+const d = project.data;
+const rows = publicEvidence(project).map((e) => ({ project: d.name, claim: e.claim, detail: e.detail, state: e.state }));
+const hasContribution = d.contribution.human.length + d.contribution.assisted.length > 0;
+const sections = [
+  { id: 'overview', label: 'Overview' },
+  ...(d.media.gallery.length ? [{ id: 'gallery', label: 'Gallery' }] : []),
+  ...(rows.length ? [{ id: 'status', label: 'Status' }] : []),
+  ...(d.notes.length ? [{ id: 'notes', label: 'Notes' }] : []),
+  ...(d.metrics.length ? [{ id: 'numbers', label: 'Numbers' }] : []),
+  ...(hasContribution ? [{ id: 'process', label: 'Process' }] : []),
+  ...(d.roadmap.length ? [{ id: 'roadmap', label: 'Roadmap' }] : []),
+];
+---
+
+<CaseHero project={project} sections={sections} />
+
+<CaseSection idx="01 — Overview" id="overview" title="What it *is*.">
+  <Prose><Content /></Prose>
+</CaseSection>
+
+{
+  d.media.gallery.length > 0 && (
+    <CaseSection idx="02 — Gallery" id="gallery" title="Captures from the *build*.">
+      <div class="gallery" data-stagger>
+        {d.media.gallery.map((id) => <Figure id={id} />)}
+      </div>
+    </CaseSection>
+  )
+}
+{
+  rows.length > 0 && (
+    <CaseSection idx="03 — Status" id="status" title="What is *implemented, tested and pending*.">
+      <Ledger rows={rows} title="Ledger · every verified claim" />
+    </CaseSection>
+  )
+}
+{
+  d.notes.length > 0 && (
+    <CaseSection idx="04 — Notes" id="notes" title="Engineering *notes*.">
+      <div class="notes" data-stagger>
+        {d.notes.map((n) => <NoteCard big={n.big} title={n.title} text={n.text} source={n.source} project={d.name} />)}
+      </div>
+    </CaseSection>
+  )
+}
+{
+  d.metrics.length > 0 && (
+    <CaseSection idx="05 — Numbers" id="numbers" title="The numbers, *with their sources*.">
+      <Metrics metrics={d.metrics} />
+    </CaseSection>
+  )
+}
+{
+  hasContribution && (
+    <CaseSection idx="06 — Process" id="process" title="Decisions and *assistance*.">
+      <Contribution human={d.contribution.human} assisted={d.contribution.assisted} />
+    </CaseSection>
+  )
+}
+{
+  d.roadmap.length > 0 && (
+    <CaseSection idx="07 — Roadmap" id="roadmap" title="What comes next, *not promised*.">
+      <ol class="road" data-stagger>
+        {d.roadmap.map((r) => <li><Tag state="planned" small /><span>{r}</span></li>)}
+      </ol>
+    </CaseSection>
+  )
+}
+
+<CaseNav current={project} />
+
+<style>
+  .gallery,
+  .notes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .road {
+    display: grid;
+    border-top: 1px solid var(--line);
+    max-width: 52em;
+  }
+  .road li {
+    display: flex;
+    gap: 16px;
+    align-items: baseline;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+  }
+  @media (max-width: 800px) {
+    .gallery,
+    .notes {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

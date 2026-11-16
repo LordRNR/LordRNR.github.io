@@ -1,0 +1,51 @@
+---
+import ProjectHead from '../components/ProjectHead.astro';
+import Story from '../components/Story.astro';
+import type { Project } from '../lib/projects';
+
+interface Props {
+  project: Project;
+}
+const { project } = Astro.props;
+const href = project.data.caseStudy.enabled ? `/projects/${project.id}/` : null;
+---
+
+<article class="feature" aria-labelledby={`t-${project.id}`}>
+  <ProjectHead project={project} titleId={`t-${project.id}`} linkTitle />
+  <Story chapters={project.data.chapters} />
+  {
+    href && (
+      <p class="more">
+        <a class="link" href={href}>
+          Read the full case study <span aria-hidden="true">→</span>
+        </a>
+      </p>
+    )
+  }
+</article>
+
+<style>
+  .feature {
+    margin-top: clamp(24px, 4vh, 48px);
+  }
+  .more {
+    margin-top: clamp(20px, 4vh, 40px);
+  }
+  .link {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    padding-bottom: 4px;
+    font-weight: 500;
+    border-bottom: 1px solid var(--line-strong);
+    transition:
+      gap 0.3s,
+      color 0.3s,
+      border-color 0.3s;
+  }
+  .link:hover {
+    gap: 14px;
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+</style>

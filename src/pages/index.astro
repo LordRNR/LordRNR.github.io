@@ -1,0 +1,37 @@
+---
+import Base from '../layouts/Base.astro';
+import Marquee from '../components/Marquee.astro';
+import Hero from '../sections/Hero.astro';
+import Who from '../sections/Who.astro';
+import Work from '../sections/Work.astro';
+import Evidence from '../sections/Evidence.astro';
+import Method from '../sections/Method.astro';
+import Process from '../sections/Process.astro';
+import Contact from '../sections/Contact.astro';
+import { getProjects } from '../lib/projects';
+import { site } from '../lib/site';
+
+// Tools shown in the marquee come from the projects' own `tech` lists: nothing is claimed that no project uses.
+const projects = await getProjects();
+const tools = [...new Set(projects.flatMap((p) => p.data.tech))];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: site.name,
+  url: site.url,
+  jobTitle: site.role,
+  sameAs: [site.links.github, ...(site.links.linkedin ? [site.links.linkedin] : [])],
+};
+---
+
+<Base jsonLd={jsonLd}>
+  <Hero />
+  <Marquee items={tools} />
+  <Who />
+  <Work />
+  <Evidence />
+  <Method />
+  <Process />
+  <Contact />
+</Base>

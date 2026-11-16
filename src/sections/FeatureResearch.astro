@@ -1,0 +1,255 @@
+---
+import ProjectHead from '../components/ProjectHead.astro';
+import ParityGrid from '../components/charts/ParityGrid.astro';
+import ResearchFlow from '../components/diagrams/ResearchFlow.astro';
+import { getResearch } from '../lib/research';
+import type { Project } from '../lib/projects';
+
+/**
+ * Home block for a research project: ONE question, ONE conclusion, ONE visualisation (parity),
+ * plus the architecture and three compact proof points. Detailed statistics live in the case study.
+ */
+interface Props {
+  project: Project;
+}
+const { project } = Astro.props;
+const r = getResearch(project.id);
+const href = project.data.caseStudy.enabled ? `/projects/${project.id}/` : null;
+---
+
+<article class="console" aria-labelledby={`t-${project.id}`}>
+  <ProjectHead project={project} titleId={`t-${project.id}`} linkTitle />
+
+  <div class="grid">
+    <section class="panel verdict" aria-label="The question and the conclusion">
+      <p class="mini mono">The problem</p>
+      <h4 class="question">Is there a net statistical edge in short-term gold trading?</h4>
+      <p class="mini mono">The conclusion</p>
+      <p class="answer" data-reveal>No <em>statistically validated</em> trading edge.</p>
+      <p class="note mono">
+        A negative result, defended with preregistered studies, a locked holdout period and null controls. Not a trading bot and not financial advice.
+      </p>
+    </section>
+
+    <section class="panel" aria-label="Python and MQL5 parity">
+      <p class="mini mono">Parity, Python and MQL5</p>
+      <p class="sub">The research code and the Expert Advisor computed the same signals on the same data.</p>
+      <ParityGrid signal={r.parity.signal} noBreakout={r.parity.noBreakout} compact />
+      <p class="note mono">{r.parity.caveat}</p>
+    </section>
+  </div>
+
+  <section class="panel wide" aria-label="Architecture">
+    <p class="mini mono">Architecture</p>
+    <ResearchFlow compact />
+  </section>
+
+  <ul class="tiles" data-stagger>
+    <li class="tile">
+      <b><span data-count={r.tests.publicPassed}>{r.tests.publicPassed}</span></b>
+      <span>automated tests passing in the public repository</span>
+    </li>
+    <li class="tile">
+      <b class="word">Fail-closed</b>
+      <span>The risk manager rejects anything it cannot verify. An audit caught the case where it did not.</span>
+    </li>
+    <li class="tile">
+      <b><span data-count={r.dryRun.ordersSent}>{r.dryRun.ordersSent}</span></b>
+      <span>orders sent in the recorded dry run, a historical result ({r.dryRun.signals} signals, {r.dryRun.orderChecks} order checks; component not published)</span>
+    </li>
+  </ul>
+
+  {
+    href && (
+      <p class="more">
+        <a class="link" href={href}>
+          Read the research <span aria-hidden="true">→</span>
+        </a>
+      </p>
+    )
+  }
+</article>
+
+<style>
+  /* "Research console" block with a palette designed for EACH theme (not an inversion).
+     Dark: near-black console with a cool grid. Light: warm paper card with a fine grid, white panels and soft shadows.
+     Every colour below is a token, so the charts and diagrams inside inherit the right contrast. */
+  .console {
+    --c-bg: #05070a;
+    --c-border: rgb(237 233 224 / 0.1);
+    --c-shadow: none;
+    --panel-shadow: none;
+    --grid: rgb(237 233 224 / 0.05);
+    --glow-a: rgb(141 178 255 / 0.22);
+    --glow-b: rgb(95 227 207 / 0.1);
+    --ink: #ede9e0;
+    --muted: #98a4b0;
+    --faint: #7f8b97;
+    --line: rgb(237 233 224 / 0.13);
+    --line-strong: rgb(237 233 224 / 0.32);
+    --accent: #8db2ff;
+    --accent-2: #c9d8ff;
+    --ok: #5fe3cf;
+    --signal: #ff8a68;
+    --surface: #0d131a;
+    --panel: #0d131a;
+    position: relative;
+    isolation: isolate;
+    margin-top: clamp(56px, 10vh, 112px);
+    padding: clamp(22px, 4vw, 56px);
+    border-radius: 36px;
+    background: var(--c-bg);
+    color: var(--ink);
+    border: 1px solid var(--c-border);
+    box-shadow: var(--c-shadow);
+    overflow: hidden;
+  }
+  :global(:root[data-theme='light']) .console {
+    --c-bg: #fbf8f2;
+    --c-border: rgb(16 22 29 / 0.14);
+    --c-shadow: 0 40px 90px -50px rgb(16 22 29 / 0.35);
+    --panel-shadow:
+      0 1px 0 rgb(16 22 29 / 0.04),
+      0 18px 40px -28px rgb(16 22 29 / 0.28);
+    --grid: rgb(16 22 29 / 0.055);
+    --glow-a: rgb(45 86 209 / 0.1);
+    --glow-b: rgb(11 110 112 / 0.07);
+    --ink: #10161d;
+    --muted: #55616d;
+    --faint: #5e6872;
+    --line: rgb(16 22 29 / 0.14);
+    --line-strong: rgb(16 22 29 / 0.32);
+    --accent: #2d56d1;
+    --accent-2: #6c8deb;
+    --ok: #0b6e70;
+    --signal: #b8321b;
+    --surface: #ffffff;
+    --panel: #ffffff;
+  }
+  .console::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(700px circle at 85% -10%, var(--glow-a), transparent 60%),
+      radial-gradient(500px circle at 0% 100%, var(--glow-b), transparent 60%),
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 48px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 48px 100%;
+    -webkit-mask-image: linear-gradient(#000, rgb(0 0 0 / 0.4));
+    mask-image: linear-gradient(#000, rgb(0 0 0 / 0.4));
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .panel {
+    padding: clamp(20px, 2.2vw, 32px);
+    border-radius: 22px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--panel-shadow);
+  }
+  .mini {
+    margin-bottom: 10px;
+    font-size: 11px;
+    line-height: 1.4;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .question {
+    margin-bottom: 26px;
+    font-weight: 600;
+    font-size: clamp(22px, 2.3vw, 32px);
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+  }
+  .answer {
+    margin-bottom: 18px;
+    font-weight: 650;
+    font-size: clamp(30px, 3.5vw, 52px);
+    line-height: 1;
+    letter-spacing: -0.045em;
+    text-wrap: balance;
+  }
+  .answer :global(em) {
+    font: italic 500 1.02em var(--font-serif);
+    color: var(--signal);
+    letter-spacing: -0.03em;
+  }
+  .sub {
+    margin-bottom: 18px;
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 40em;
+  }
+  .note {
+    margin-top: 14px;
+    font-size: 11.5px;
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+  }
+  .wide {
+    margin-bottom: 16px;
+  }
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .tile {
+    padding: 22px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    box-shadow: var(--panel-shadow);
+  }
+  .tile b {
+    display: block;
+    font: 600 clamp(32px, 4vw, 56px) / 1 var(--font-sans);
+    letter-spacing: -0.05em;
+    font-variant-numeric: tabular-nums;
+  }
+  .tile b.word {
+    font-size: clamp(26px, 3vw, 40px);
+    letter-spacing: -0.04em;
+  }
+  .tile > span {
+    display: block;
+    margin-top: 12px;
+    font: 500 11px / 1.5 var(--font-mono);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .more {
+    margin-top: 28px;
+  }
+  .link {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    padding-bottom: 4px;
+    font-weight: 500;
+    border-bottom: 1px solid var(--line-strong);
+    transition:
+      gap 0.3s,
+      color 0.3s,
+      border-color 0.3s;
+  }
+  .link:hover {
+    gap: 14px;
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  @media (max-width: 900px) {
+    .grid,
+    .tiles {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

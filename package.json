@@ -1,0 +1,29 @@
+{
+  "name": "lucas-ramos-portfolio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Portfolio of Lucas Ramos (LordRNR). Static Astro site, built for GitHub Pages.",
+  "engines": {
+    "node": ">=22.23.4"
+  },
+  "scripts": {
+    "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
+    "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
+    "check:site": "node scripts/check-site.mjs",
+    "check:publish": "node scripts/check-site.mjs --publish",
+    "check:contrast": "node scripts/check-contrast.mjs",
+    "media:audit": "node scripts/media-audit.mjs",
+    "weight": "node scripts/weight.mjs",
+    "test:add-project": "node scripts/test-add-project.mjs",
+    "licenses": "node scripts/licenses.mjs",
+    "check": "npm run build && npm run check:site && npm run check:contrast"
+  },
+  "dependencies": {
+    "@fontsource-variable/fraunces": "5.3.0",
+    "@fontsource-variable/inter-tight": "5.3.0",
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "astro": "7.4.7"
+  }
+}

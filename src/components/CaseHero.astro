@@ -1,0 +1,109 @@
+---
+import ProjectHead from './ProjectHead.astro';
+import Figure from './Figure.astro';
+import type { Project } from '../lib/projects';
+
+interface Props {
+  project: Project;
+  sections: { id: string; label: string }[];
+}
+const { project, sections } = Astro.props;
+const d = project.data;
+const links = [
+  d.links.repo && { href: d.links.repo, label: 'Repository' },
+  d.links.demo && { href: d.links.demo, label: 'Demo' },
+  d.links.video && { href: d.links.video, label: 'Video' },
+].filter(Boolean) as { href: string; label: string }[];
+---
+
+<header class="case wrap">
+  <nav class="crumb mono" aria-label="Breadcrumb">
+    <a href="/projects/">Projects</a><span aria-hidden="true">/</span><span aria-current="page">{d.name}</span>
+  </nav>
+  <ProjectHead project={project} as="h1" />
+  <p class="summary">{d.summary}</p>
+  {
+    links.length > 0 && (
+      <p class="links">
+        {links.map((l) => <a href={l.href} rel="noopener">{l.label} <span aria-hidden="true">↗</span></a>)}
+      </p>
+    )
+  }
+  {d.media.hero && <div class="hero"><Figure id={d.media.hero} priority ratio="21 / 9" sizes="(min-width: 1240px) 1240px, 100vw" /></div>}
+  <nav class="onpage" aria-label="On this page">
+    {sections.map((s) => <a href={`#${s.id}`}>{s.label}</a>)}
+  </nav>
+</header>
+
+<style>
+  .case {
+    padding-top: calc(var(--nav-h) + clamp(28px, 6vh, 64px));
+  }
+  .crumb {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 22px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .crumb a:hover {
+    color: var(--ink);
+  }
+  .crumb [aria-current] {
+    color: var(--ink);
+  }
+  .summary {
+    max-width: 46em;
+    margin-top: -8px;
+    color: var(--muted);
+    font-size: clamp(17px, 1.3vw, 20px);
+    line-height: 1.6;
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    margin-top: 18px;
+  }
+  .links a {
+    padding: 8px 0;
+    font-weight: 500;
+    border-bottom: 1px solid var(--line-strong);
+    transition:
+      color 0.3s,
+      border-color 0.3s;
+  }
+  .links a:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .hero {
+    margin-top: clamp(28px, 5vh, 52px);
+  }
+  .onpage {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: clamp(24px, 4vh, 40px);
+    padding: 14px 0;
+    border-block: 1px solid var(--line);
+  }
+  .onpage a {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    font: 500 12px/1 var(--font-mono);
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    transition:
+      color 0.3s,
+      border-color 0.3s,
+      background 0.3s;
+  }
+  .onpage a:hover {
+    color: var(--ink);
+    border-color: var(--line-strong);
+    background: color-mix(in srgb, var(--ink) 6%, transparent);
+  }
+</style>

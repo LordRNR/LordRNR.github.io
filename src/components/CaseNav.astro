@@ -1,0 +1,80 @@
+---
+import { getProjects, hasCaseStudy, projectHref, type Project } from '../lib/projects';
+
+interface Props {
+  current: Project;
+}
+const { current } = Astro.props;
+const all = (await getProjects()).filter(hasCaseStudy);
+const i = all.findIndex((p) => p.id === current.id);
+const next = all.length > 1 ? all[(i + 1) % all.length] : null;
+---
+
+<nav class="next wrap" aria-label="More projects">
+  <a href="/projects/" class="all">← All projects</a>
+  {
+    next && (
+      <a href={projectHref(next)!} class="nextlink">
+        <span class="mono">Next project</span>
+        <b>{next.data.name}</b>
+        <span class="tag">{next.data.tagline}</span>
+      </a>
+    )
+  }
+</nav>
+
+<style>
+  .next {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 24px 48px;
+    align-items: end;
+    margin-top: var(--section-y);
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .all {
+    padding: 10px 0;
+    color: var(--muted);
+    transition: color 0.3s;
+  }
+  .all:hover {
+    color: var(--ink);
+  }
+  .nextlink {
+    display: grid;
+    gap: 6px;
+    justify-items: end;
+    text-align: right;
+  }
+  .nextlink .mono {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  b {
+    font-size: clamp(28px, 4vw, 56px);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-weight: 650;
+    transition: color 0.3s;
+  }
+  .nextlink:hover b {
+    color: var(--accent);
+  }
+  .tag {
+    max-width: 34em;
+    color: var(--muted);
+    font-size: 15px;
+  }
+  @media (max-width: 700px) {
+    .next {
+      grid-template-columns: 1fr;
+    }
+    .nextlink {
+      justify-items: start;
+      text-align: left;
+    }
+  }
+</style>

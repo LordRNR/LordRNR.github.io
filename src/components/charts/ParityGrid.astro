@@ -1,0 +1,87 @@
+---
+/** 90 day-sessions, grouped by outcome (not chronological): filled = SIGNAL, hollow = NO_BREAKOUT. All are equal on both sides. */
+interface Props {
+  signal: number;
+  noBreakout: number;
+  compact?: boolean;
+}
+const { signal, noBreakout, compact = false } = Astro.props;
+const total = signal + noBreakout;
+const dots = Array.from({ length: total }, (_, i) => ({ i, hollow: i >= signal }));
+const label = `${total} day-sessions: ${signal} signals and ${noBreakout} no-breakout days, identical in Python and in the MQL5 Expert Advisor. Zero hard differences.`;
+---
+
+<div class:list={['parity', { compact }]}>
+  <div class="grid" data-inview role="img" aria-label={label}>
+    {dots.map((d) => <i class:list={['d', { o: d.hollow }]} style={`--i:${d.i}`} data-tip={d.hollow ? 'NO_BREAKOUT: identical in Python and the EA' : 'SIGNAL: identical in Python and the EA'}></i>)}
+  </div>
+  <p class="legend">
+    <span><i class="k"></i>{signal} · SIGNAL, equal on both sides</span>
+    <span><i class="k o"></i>{noBreakout} · NO_BREAKOUT, equal</span>
+  </p>
+</div>
+
+<script>
+  import '../../scripts/tooltip.ts';
+</script>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    gap: clamp(5px, 0.7vw, 9px);
+    max-width: 560px;
+    margin: 4px 0 16px;
+  }
+  .compact .grid {
+    gap: clamp(4px, 0.5vw, 7px);
+    max-width: 440px;
+  }
+  .d {
+    display: block;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 2px var(--panel, var(--surface));
+  }
+  :global(.js) .d {
+    scale: 0;
+    transition: scale 0.5s var(--ease) calc(var(--i) * 14ms);
+  }
+  :global(.js) .grid.in .d {
+    scale: 1;
+  }
+  .d.o {
+    background: transparent;
+    border: 1.5px solid var(--muted);
+    box-shadow: none;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .legend span {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .k {
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .k.o {
+    background: transparent;
+    border: 1.5px solid var(--muted);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(.js) .d {
+      scale: 1;
+    }
+  }
+</style>

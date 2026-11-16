@@ -1,0 +1,88 @@
+---
+import SectionHead from '../components/SectionHead.astro';
+import { copy } from '../data/copy';
+import { site } from '../lib/site';
+
+const e = site.education;
+const years = e.start && e.expectedEnd ? `${e.start}–${e.expectedEnd}` : null;
+---
+
+<section class="sec" id="who" aria-labelledby="who-h">
+  <div class="wrap">
+    <SectionHead idx="01 — Who" id="who-h">Builder first. <em>Honest</em> about the results.</SectionHead>
+    <div class="grid">
+      <p class="scrub" data-scrub>{copy.who.statement}</p>
+      <dl class="facts" data-stagger>
+        <div>
+          <dt>Education</dt>
+          <dd>{e.degree}, {e.institution} ({e.track}){years && ` · ${years}`}</dd>
+        </div>
+        <div>
+          <dt>Interests</dt>
+          <dd>{copy.who.interests}</dd>
+        </div>
+        <div>
+          <dt>Way of working</dt>
+          <dd>{copy.who.way}</dd>
+        </div>
+        {site.location && <div><dt>Based in</dt><dd>{site.location}</dd></div>}
+        {site.availability && <div><dt>Looking for</dt><dd>{site.availability}</dd></div>}
+      </dl>
+    </div>
+  </div>
+</section>
+
+<style>
+  .sec {
+    padding-block: var(--section-y);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.8fr);
+    gap: clamp(32px, 6vw, 96px);
+    align-items: start;
+  }
+  .scrub {
+    font-weight: 560;
+    font-size: clamp(26px, 3.7vw, 52px);
+    line-height: 1.14;
+    letter-spacing: -0.035em;
+  }
+  :global(.js) .scrub :global(.sw) {
+    color: var(--muted);
+    transition: color 0.45s var(--ease);
+  }
+  :global(.js) .scrub :global(.sw.on) {
+    color: var(--ink);
+  }
+  .facts {
+    margin: 0;
+    border-top: 1px solid var(--line);
+  }
+  .facts > div {
+    padding: 20px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  dt {
+    margin-bottom: 10px;
+    font: 500 11px/1 var(--font-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  dd {
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.45;
+  }
+  @media (max-width: 900px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(.js) .scrub :global(.sw) {
+      color: var(--ink);
+    }
+  }
+</style>

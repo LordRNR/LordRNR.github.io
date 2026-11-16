@@ -1,0 +1,471 @@
+---
+import CaseHero from '../CaseHero.astro';
+import CaseSection from '../CaseSection.astro';
+import CaseNav from '../CaseNav.astro';
+import Prose from '../Prose.astro';
+import Ledger from '../Ledger.astro';
+import NoteCard from '../NoteCard.astro';
+import Metrics from '../Metrics.astro';
+import Contribution from '../Contribution.astro';
+import ExpectancyBars from '../charts/ExpectancyBars.astro';
+import FoldColumns from '../charts/FoldColumns.astro';
+import ParityGrid from '../charts/ParityGrid.astro';
+import ResearchFlow from '../diagrams/ResearchFlow.astro';
+import { getResearch } from '../../lib/research';
+import { publicEvidence, type Project } from '../../lib/projects';
+
+interface Props {
+  project: Project;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Content: any;
+}
+const { project, Content } = Astro.props;
+const d = project.data;
+const r = getResearch(project.id);
+const s7 = r.study7;
+const s8 = r.study8;
+const dn = s8.donchian;
+const s9 = r.study9;
+const rows = publicEvidence(project).map((e) => ({ project: d.name, claim: e.claim, detail: e.detail, state: e.state }));
+const signed = (v: number, dp = 2) => `${v > 0 ? '+' : '−'}${Math.abs(v).toFixed(dp)}`;
+const sections = [
+  { id: 'conclusion', label: 'Conclusion' },
+  { id: 'architecture', label: 'Architecture' },
+  { id: 'study-7', label: 'Study 7' },
+  { id: 'study-8', label: 'Study 8' },
+  { id: 'study-9', label: 'Study 9' },
+  { id: 'parity', label: 'Parity' },
+  { id: 'safety', label: 'Risk and audits' },
+  { id: 'testing', label: 'Testing' },
+  { id: 'limits', label: 'Limits' },
+  { id: 'notes', label: 'Notes' },
+  { id: 'process', label: 'Process' },
+];
+---
+
+<CaseHero project={project} sections={sections} />
+
+<CaseSection idx="01 — Conclusion" id="conclusion" title="No *statistically validated* trading edge.">
+  <div class="verdict">
+    <Prose><Content /></Prose>
+    <div class="not">
+      <h3 class="mono">What this is not</h3>
+      <p>A profitable bot, a validated financial product or financial advice. Live trading is disabled in code. The component that could send orders is not published; its recorded dry run ({r.dryRun.signals} signals, {r.dryRun.orderChecks} order checks) sent {r.dryRun.ordersSent} orders, a historical result that the public repository cannot reproduce.</p>
+    </div>
+  </div>
+</CaseSection>
+
+<CaseSection idx="02 — Architecture" id="architecture" title="Python researches, *MQL5 mirrors*." lede="The research code and the Expert Advisor are two implementations of the same rules, so a parity check is mandatory. A fail-closed risk manager sits between every proposal and any order. The repository publishes the read-only Expert Advisor; the one that could send orders is not published.">
+  <ResearchFlow />
+  <ul class="arch" data-stagger>
+    {d.architecture.map((a) => <li><h3>{a.title}</h3><p>{a.text}</p></li>)}
+  </ul>
+</CaseSection>
+
+<CaseSection idx="03 — Study 7" id="study-7" title="An opening-range breakout, *under three cost scenarios*." lede={`${s7.title}: ${s7.folds} walk-forward folds, ${s7.coveragePct}% data coverage, cost scenarios and the verdict rule fixed before the run.`}>
+  <div class="panel">
+    <ExpectancyBars scenarios={s7.scenarios} domain={s7.domain} primary={s7.primary} units="R per trade" source={s7.source} />
+  </div>
+  <p class="reading">
+    In the primary scenario the 95% interval includes zero; in the other two it lies entirely below zero. Even at zero cost the point estimates stay below zero. The preregistered verdict: no evidence of a net edge.
+  </p>
+</CaseSection>
+
+<CaseSection idx="04 — Study 8" id="study-8" title="Four families, *22 preregistered configurations*." lede="Trend, momentum, pullback and mean reversion were written down before any run. None met all eight criteria.">
+  <div class="panel tablewrap" role="region" aria-label="Results by strategy family (scrollable table)" tabindex="0">
+    <table class="t">
+      <caption class="sr-only">Out-of-sample results by strategy family</caption>
+      <thead><tr><th>Family</th><th>Trades</th><th>Expectancy (R)</th><th>95% interval, lower bound</th><th>p versus random direction</th><th>All 8 criteria</th></tr></thead>
+      <tbody>
+        {s8.families.map((f: { label: string; trades: number; expectancy: number; ciLow: number; p: number; meetsAll: boolean }) => (
+          <tr>
+            <th scope="row">{f.label}</th>
+            <td>{f.trades}</td>
+            <td>{signed(f.expectancy, 3)}</td>
+            <td>{signed(f.ciLow, 3)}</td>
+            <td>{f.p.toFixed(3)}</td>
+            <td>{f.meetsAll ? 'Met' : 'Not met'}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    <p class="src mono">Source: {s8.source}</p>
+  </div>
+
+  <div class="donchian">
+    <h3 class="sub">The closest candidate: H1 Donchian trend</h3>
+    <p class="reading">
+      It averaged {signed(s8.families.find((f: { id: string }) => f.id === 'trend_donchian').expectancy)} R across {dn.trades} trades, but its 95% interval starts at −0.02 and it fails three preregistered criteria. Out-of-sample R by walk-forward fold:
+    </p>
+    <div class="panel">
+      <FoldColumns folds={dn.folds} foldsTotal={dn.foldsTotal} highlightYear="2025" highlightLabel="2025 folds" source={s8.source} />
+    </div>
+    <ul class="trio" data-stagger>
+      <li><b>{signed(dn.longs.totalR, 1)} R</b><span>{dn.longs.trades} longs</span></li>
+      <li><b>{signed(dn.shorts.totalR, 1)} R</b><span>{dn.shorts.trades} shorts</span></li>
+      <li><b>{Math.round(dn.top5Share * 100)}%</b><span>of the net R came from the 5 best trades; without them, the expectancy falls to {signed(dn.expectancyWithoutTop5)} R</span></li>
+    </ul>
+    <div class="panel tablewrap" role="region" aria-label="The eight preregistered criteria for the Donchian strategy (scrollable table)" tabindex="0">
+      <table class="t">
+        <caption class="sr-only">The eight preregistered criteria for the Donchian strategy</caption>
+        <thead><tr><th>No.</th><th>Criterion</th><th>Result</th><th>Data</th></tr></thead>
+        <tbody>
+          {dn.criteria.map((c: { n: number; text: string; pass: boolean; data: string }) => (
+            <tr class:list={[{ fail: !c.pass }]}>
+              <td>{c.n}</td>
+              <td>{c.text}</td>
+              <td>{c.pass ? 'Met' : 'Not met'}</td>
+              <td>{c.data}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="caveat">
+      <b class="mono">Post-hoc</b>
+      {dn.postHocNote} It looks like exposure to the 2024–25 rally rather than a demonstrated signal: every positive result comes from long trades, and the three folds of 2025 supply {signed(dn.r2025, 1)} R of {signed(dn.totalR, 1)} R. For contrast, mean reversion traded in only {s8.meanReversion.foldsWithTrades} of {s8.meanReversion.foldsTotal} folds ({s8.meanReversion.trades} trades, {signed(s8.meanReversion.totalR, 1)} R).
+    </p>
+  </div>
+</CaseSection>
+
+<CaseSection idx="05 — Study 9" id="study-9" title="Would passing a challenge *mean anything*?" lede={`${s9.title}: ${s9.weeks} weeks per phase, ${s9.riskPct}% risk per trade, with a null control.`}>
+  <div class="panel tablewrap" role="region" aria-label="Simulated challenge pass probability (scrollable table)" tabindex="0">
+    <table class="t">
+      <caption class="sr-only">Simulated probability of passing both phases of the challenge</caption>
+      <thead><tr><th>Strategy</th><th>Passes both phases (95% interval)</th><th>A strategy with no edge passes</th></tr></thead>
+      <tbody>
+        {s9.rows.map((x: { label: string; pass: number; passCi: [number, number]; nullPass: number }) => (
+          <tr>
+            <th scope="row">{x.label}</th>
+            <td>{x.pass.toFixed(1)}% ({x.passCi[0].toFixed(1)}–{x.passCi[1].toFixed(1)}%)</td>
+            <td>{x.nullPass.toFixed(1)}%</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    <p class="src mono">Source: {s9.source}</p>
+  </div>
+  <p class="reading">
+    A strategy with no edge passes between 8.5% and 15.0% of the time in this simulation (ORB 8.5%, Donchian 9.0%, pullback 9.8%, momentum 15.0%). Donchian's 49.2% has an interval that reaches that null level, so passing is not evidence of an edge. The conclusion was not to pay for any challenge.
+  </p>
+</CaseSection>
+
+<CaseSection idx="06 — Parity" id="parity" title="Two languages, *the same signals*." lede="The research code in Python and the Expert Advisor in MQL5 were compared session by session on the same data.">
+  <div class="panel">
+    <ParityGrid signal={r.parity.signal} noBreakout={r.parity.noBreakout} />
+    <p class="reading small">{r.parity.caveat}</p>
+    <h3 class="sub">Five runs to get one clean result</h3>
+    <ol class="runs" data-stagger>
+      {r.parity.runs.map((x: { id: string; result: string; text: string }) => <li class={x.result}><b class="mono">{x.id}</b><span>{x.text}</span></li>)}
+    </ol>
+    <p class="src mono">Source: {r.parity.source}</p>
+  </div>
+</CaseSection>
+
+<CaseSection idx="07 — Safety" id="safety" title="Risk limits and *audits*." lede="A fail-closed risk manager, hard limits, and repeated severity-ranked audits with regression tests.">
+  <div class="two">
+    <div class="panel">
+      <h3 class="sub">Default settings and fixed rules</h3>
+      <ul class="limits">{r.limits.map((l: string) => <li>{l}</li>)}</ul>
+      <h3 class="sub caps">Hard caps enforced in code</h3>
+      <p class="src mono">Configuration cannot exceed these (src/xauscalp/config.py, HARD_LIMITS).</p>
+      <ul class="limits">{r.hardCaps.map((l: string) => <li>{l}</li>)}</ul>
+    </div>
+    <div class="panel">
+      <h3 class="sub">Audit findings, examples</h3>
+      <ul class="audits">
+        {r.audits.map((a: { id: string; severity: string; title: string; status: string }) => (
+          <li><b class={`sev ${a.severity} mono`}>{a.severity}</b><span><b>{a.id}</b> {a.title}. <em>{a.status}.</em></span></li>
+        ))}
+      </ul>
+      <p class="src mono">Source: {r.auditSource}</p>
+    </div>
+  </div>
+</CaseSection>
+
+<CaseSection idx="08 — Testing" id="testing" title="Tested, *and reproducible*.">
+  <Metrics metrics={d.metrics} />
+  <p class="reading">
+    The public repository has {r.tests.publicPassed} automated tests in {r.tests.publicFiles} files, all passing in a fresh install, 0 skipped. The private development repository has {r.tests.collected} ({r.tests.method}); the difference is tests of the AI-tool configuration and of the order-sending component, neither published, minus one regression test added to the public repository. The environment is locked with uv, each study is one script, and reports are regenerated from code. Market data is not included: it must come from your own MetaTrader 5 demo account or be downloaded by you under the provider's terms.
+  </p>
+</CaseSection>
+
+<CaseSection idx="09 — Limits" id="limits" title="What this work *does not show*.">
+  <ul class="limitations" data-stagger>
+    {r.limitations.map((l: string) => <li>{l}</li>)}
+  </ul>
+</CaseSection>
+
+<CaseSection idx="10 — Notes" id="notes" title="Engineering notes: *what went wrong*.">
+  <div class="notes" data-stagger>
+    {d.notes.map((n) => <NoteCard big={n.big} title={n.title} text={n.text} source={n.source} project={d.name} />)}
+  </div>
+</CaseSection>
+
+<CaseSection idx="11 — Ledger" id="ledger" title="The ledger, *claim by claim*.">
+  <Ledger rows={rows} title="Ledger · every verified claim" />
+</CaseSection>
+
+<CaseSection idx="12 — Process" id="process" title="Decisions and *assistance*.">
+  <Contribution human={d.contribution.human} assisted={d.contribution.assisted} />
+</CaseSection>
+
+<CaseNav current={project} />
+
+<style>
+  .verdict {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    gap: clamp(24px, 4vw, 56px);
+    align-items: start;
+  }
+  .not {
+    padding: 22px 24px;
+    border-radius: 20px;
+    border: 1px dashed var(--line-strong);
+  }
+  .not h3,
+  .sub {
+    margin-bottom: 12px;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .not p {
+    color: var(--muted);
+  }
+  .panel {
+    padding: clamp(18px, 2.2vw, 30px);
+    border-radius: 22px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    margin-top: 16px;
+  }
+  .reading {
+    max-width: 46em;
+    margin-top: 18px;
+    color: var(--muted);
+  }
+  .reading.small {
+    font-size: 14px;
+    margin: 0 0 22px;
+  }
+  .arch {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    gap: 14px;
+    margin-top: 18px;
+  }
+  .arch li {
+    padding: 20px 22px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .arch h3 {
+    margin-bottom: 8px;
+    font-size: 18px;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+  .arch p {
+    color: var(--muted);
+    font-size: 15px;
+  }
+  .tablewrap {
+    overflow-x: auto;
+  }
+  .t {
+    width: 100%;
+    min-width: 560px;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .t th,
+  .t td {
+    padding: 11px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    font-weight: 400;
+    vertical-align: top;
+  }
+  .t thead th {
+    font: 600 10.5px var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .t tbody th {
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .t td {
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+  }
+  .t .fail td {
+    color: var(--signal);
+  }
+  .src {
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--faint);
+  }
+  .donchian {
+    margin-top: clamp(32px, 5vh, 56px);
+  }
+  .trio {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .trio li {
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--surface);
+  }
+  .trio b {
+    display: block;
+    font: 600 clamp(22px, 2.4vw, 32px) / 1 var(--font-sans);
+    letter-spacing: -0.04em;
+  }
+  .trio span {
+    display: block;
+    margin-top: 8px;
+    font: 500 10.5px / 1.45 var(--font-mono);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .caveat {
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+    margin-top: 16px;
+    padding: 16px 20px;
+    border: 1px dashed var(--line-strong);
+    border-radius: 16px;
+    color: var(--muted);
+    font-size: 15px;
+  }
+  .caveat b {
+    flex: none;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .runs {
+    display: grid;
+    border-top: 1px solid var(--line);
+  }
+  .runs li {
+    display: grid;
+    grid-template-columns: 88px 1fr;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+  }
+  .runs b {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .runs .ok b {
+    color: var(--ok);
+  }
+  .runs .ok span {
+    color: var(--ink);
+  }
+  .two {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .two .panel {
+    margin-top: 0;
+  }
+  .sub.caps {
+    margin-top: 22px;
+  }
+  .limits,
+  .limitations {
+    display: grid;
+    gap: 10px;
+  }
+  .limits li,
+  .limitations li {
+    position: relative;
+    padding-left: 18px;
+    color: var(--muted);
+  }
+  .limits li::before,
+  .limitations li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.65em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .limitations li::before {
+    background: var(--signal);
+  }
+  .limitations {
+    max-width: 52em;
+  }
+  .audits {
+    display: grid;
+    gap: 12px;
+  }
+  .audits li {
+    display: grid;
+    grid-template-columns: 78px 1fr;
+    gap: 14px;
+    align-items: baseline;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .audits li span b {
+    color: var(--ink);
+  }
+  .sev {
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .sev.critical {
+    color: var(--signal);
+  }
+  .sev.high {
+    color: var(--accent);
+  }
+  .sev.medium {
+    color: var(--muted);
+  }
+  .notes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  @media (max-width: 800px) {
+    .verdict,
+    .two,
+    .notes {
+      grid-template-columns: 1fr;
+    }
+    .trio {
+      grid-template-columns: 1fr;
+    }
+    .caveat {
+      flex-direction: column;
+      gap: 6px;
+    }
+  }
+</style>

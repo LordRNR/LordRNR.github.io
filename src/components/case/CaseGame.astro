@@ -1,0 +1,146 @@
+---
+import CaseHero from '../CaseHero.astro';
+import CaseSection from '../CaseSection.astro';
+import CaseNav from '../CaseNav.astro';
+import Prose from '../Prose.astro';
+import Story from '../Story.astro';
+import Ledger from '../Ledger.astro';
+import NoteCard from '../NoteCard.astro';
+import Metrics from '../Metrics.astro';
+import Contribution from '../Contribution.astro';
+import Tag from '../Tag.astro';
+import GameFlow from '../diagrams/GameFlow.astro';
+import { publicEvidence, type Project } from '../../lib/projects';
+
+interface Props {
+  project: Project;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Content: any;
+}
+const { project, Content } = Astro.props;
+const d = project.data;
+const rows = publicEvidence(project).map((e) => ({ project: d.name, claim: e.claim, detail: e.detail, state: e.state }));
+const sections = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'scenes', label: 'Scenes' },
+  { id: 'status', label: 'Status' },
+  { id: 'architecture', label: 'Architecture' },
+  { id: 'notes', label: 'Engineering notes' },
+  { id: 'numbers', label: 'Numbers' },
+  { id: 'process', label: 'How it was built' },
+  ...(d.roadmap.length ? [{ id: 'roadmap', label: 'Roadmap' }] : []),
+];
+---
+
+<CaseHero project={project} sections={sections} />
+
+<CaseSection idx="01 — Overview" id="overview" title="The game, *in short*.">
+  <Prose><Content /></Prose>
+</CaseSection>
+
+<CaseSection idx="02 — Scenes" id="scenes" title="Four scenes from the *build*." lede="These captures are provisional: they are from Roblox Studio in Play mode, some show a test avatar or an earlier HUD, and they will be replaced as the art is approved. Each scene lists what is tested and what is pending.">
+  <Story chapters={d.chapters} />
+</CaseSection>
+
+<CaseSection idx="03 — Status" id="status" title="What is *implemented, tested and pending*." lede="Every row has a source in the project's own documentation. Rows that are not yet confirmed are not shown.">
+  <Ledger rows={rows} title="Ledger · every verified claim" />
+</CaseSection>
+
+<CaseSection idx="04 — Architecture" id="architecture" title="Designed so the *server decides*.">
+  <GameFlow />
+  <ul class="arch" data-stagger>
+    {d.architecture.map((a) => <li><h3>{a.title}</h3><p>{a.text}</p></li>)}
+  </ul>
+</CaseSection>
+
+<CaseSection idx="05 — Notes" id="notes" title="Engineering notes: *measured*, then decided." lede="Each note names the file that records it.">
+  <div class="notes" data-stagger>
+    {d.notes.map((n) => <NoteCard big={n.big} title={n.title} text={n.text} source={n.source} project={d.name} />)}
+  </div>
+</CaseSection>
+
+<CaseSection idx="06 — Numbers" id="numbers" title="The numbers, *with their sources*.">
+  <Metrics metrics={d.metrics} />
+</CaseSection>
+
+<CaseSection idx="07 — Process" id="process" title="How it was built: *decisions and assistance*.">
+  <Contribution human={d.contribution.human} assisted={d.contribution.assisted} />
+  {d.privateNote && <p class="private"><b class="mono">Private</b>{d.privateNote}</p>}
+</CaseSection>
+
+{
+  d.roadmap.length > 0 && (
+    <CaseSection idx="08 — Roadmap" id="roadmap" title="What comes next, *not promised*." lede="Planned work. None of this is described as finished.">
+      <ol class="road" data-stagger>
+        {d.roadmap.map((r) => <li><Tag state="planned" small /><span>{r}</span></li>)}
+      </ol>
+    </CaseSection>
+  )
+}
+
+<CaseNav current={project} />
+
+<style>
+  .arch {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 14px;
+    margin-top: 18px;
+  }
+  .arch li {
+    padding: 20px 22px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .arch h3 {
+    margin-bottom: 8px;
+    font-size: 18px;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+  .arch p {
+    color: var(--muted);
+    font-size: 15px;
+  }
+  .notes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .road {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--line);
+    max-width: 52em;
+  }
+  .road li {
+    display: flex;
+    gap: 16px;
+    align-items: baseline;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+  }
+  .private {
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+    margin-top: 20px;
+    padding: 16px 20px;
+    border: 1px dashed var(--line-strong);
+    border-radius: 16px;
+    color: var(--muted);
+  }
+  .private b {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  @media (max-width: 800px) {
+    .notes {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

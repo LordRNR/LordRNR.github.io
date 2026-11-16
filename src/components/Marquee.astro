@@ -1,0 +1,71 @@
+---
+interface Props {
+  items: string[];
+  label?: string;
+}
+const { items, label = 'Tools used across my projects' } = Astro.props;
+---
+
+<div class="marquee" role="group" aria-label={label}>
+  <ul class="track">
+    {items.map((t) => <li>{t}</li>)}
+    {items.map((t) => <li aria-hidden="true">{t}</li>)}
+  </ul>
+</div>
+
+<style>
+  .marquee {
+    border-block: 1px solid var(--line);
+    overflow: hidden;
+    padding: 20px 0;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+  }
+  .track {
+    display: flex;
+    gap: 56px;
+    width: max-content;
+    animation: mq 46s linear infinite;
+    font: 500 13px/1 var(--font-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  li {
+    display: flex;
+    align-items: center;
+    gap: 56px;
+    white-space: nowrap;
+  }
+  li::after {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--faint);
+  }
+  .marquee:hover .track,
+  .marquee:focus-within .track {
+    animation-play-state: paused;
+  }
+  @keyframes mq {
+    to {
+      translate: -50% 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .track {
+      animation: none;
+      width: auto;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px 32px;
+    }
+    li[aria-hidden='true'] {
+      display: none;
+    }
+    li {
+      gap: 32px;
+    }
+  }
+</style>

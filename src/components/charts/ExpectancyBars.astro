@@ -1,0 +1,302 @@
+---
+/**
+ * Study 7: out-of-sample expectancy per trade (R) for three cost scenarios.
+ * Bar = expectancy, whisker = 95% interval (weekly blocks), diamond = the same result at zero cost.
+ * The primary scenario is emphasised. Rendered at build time from verified data; table view included.
+ */
+interface Scenario {
+  id: string;
+  label: string;
+  trades: number;
+  value: number;
+  ci: [number, number];
+  zeroCost: number;
+}
+interface Props {
+  scenarios: Scenario[];
+  domain: [number, number];
+  primary?: string;
+  units: string;
+  source: string;
+}
+const { scenarios, domain, primary, units, source } = Astro.props;
+const [lo, hi] = domain;
+const span = hi - lo;
+const pct = (v: number) => ((v - lo) / span) * 100;
+const fmt = (v: number) => `${v > 0 ? '+' : '−'}${Math.abs(v).toFixed(2)}`;
+const fmt3 = (v: number) => `${v > 0 ? '+' : '−'}${Math.abs(v).toFixed(3)}`;
+const ticks: number[] = [];
+for (let t = Math.ceil(lo * 10 - 1e-9); t <= Math.floor(hi * 10 + 1e-9); t++) ticks.push(t / 10);
+const alt = `Horizontal bars of out-of-sample expectancy in R per trade. ${scenarios
+  .map((s) => `${s.label}: ${fmt3(s.value)} R, 95% interval ${fmt3(s.ci[0])} to ${fmt3(s.ci[1])}, ${fmt3(s.zeroCost)} R at zero cost`)
+  .join('; ')}.`;
+---
+
+<div class="chart" data-inview>
+  <div class="body" role="img" aria-label={alt}>
+    <div class="rows">
+      {
+        scenarios.map((s, i) => (
+          <div class="row">
+            <div class="lab">
+              <b>{s.label}</b>
+              <span>{s.trades.toLocaleString('en-US')} trades</span>
+            </div>
+            <div class="plot">
+              <div class="grid">
+                {ticks.map((t) => <i class:list={['g', { zero: t === 0 }]} style={`left:${pct(t)}%`}></i>)}
+              </div>
+              <i
+                class:list={['bar', { hl: s.id === primary }]}
+                style={`left:${pct(s.value)}%;width:${pct(0) - pct(s.value)}%;--i:${i}`}
+                tabindex="0"
+                data-tip={`${s.label}: ${fmt3(s.value)} R per trade`}
+              />
+              <i class="whisk" style={`left:${pct(s.ci[0])}%;width:${pct(s.ci[1]) - pct(s.ci[0])}%`} data-tip={`95% interval: ${fmt3(s.ci[0])} to ${fmt3(s.ci[1])}`} tabindex="0" />
+              <i class="zc" style={`left:${pct(s.zeroCost)}%`} data-tip={`At zero cost: ${fmt3(s.zeroCost)} R`} tabindex="0" />
+            </div>
+            <div class="val mono">{fmt(s.value)}</div>
+          </div>
+        ))
+      }
+    </div>
+    <div class="axis">
+      <span class="spacer"></span>
+      <div class="ticks">
+        {ticks.map((t) => <u style={`left:${pct(t)}%`}>{t === 0 ? '0' : fmt(t)}</u>)}
+      </div>
+      <span class="spacer"></span>
+    </div>
+  </div>
+
+  <p class="legend">
+    <span><i class="k bar"></i>Expectancy, {units}</span>
+    <span><i class="k whisk"></i>95% interval</span>
+    <span><i class="k zc"></i>Same result at zero cost</span>
+  </p>
+
+  <details class="tbl">
+    <summary>View as table</summary>
+    <table>
+      <thead><tr><th>Scenario</th><th>Trades</th><th>Expectancy (R)</th><th>95% interval</th><th>At zero cost</th></tr></thead>
+      <tbody>
+        {scenarios.map((s) => <tr><td>{s.label}</td><td>{s.trades}</td><td>{fmt3(s.value)}</td><td>{fmt3(s.ci[0])} to {fmt3(s.ci[1])}</td><td>{fmt3(s.zeroCost)}</td></tr>)}
+      </tbody>
+    </table>
+  </details>
+  <p class="src mono">Source: {source}</p>
+</div>
+
+<script>
+  import '../../scripts/tooltip.ts';
+</script>
+
+<style>
+  .rows {
+    display: grid;
+    gap: 6px;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: minmax(130px, 0.3fr) 1fr 64px;
+    gap: 14px;
+    align-items: center;
+    padding: 10px 0;
+  }
+  .lab b {
+    display: block;
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .lab span {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .plot {
+    position: relative;
+    height: 30px;
+  }
+  .grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .g {
+    position: absolute;
+    top: -8px;
+    bottom: -8px;
+    width: 1px;
+    background: var(--line);
+  }
+  .g.zero {
+    background: var(--line-strong);
+  }
+  .bar {
+    position: absolute;
+    top: 8px;
+    height: 14px;
+    border-radius: 4px 0 0 4px;
+    background: color-mix(in srgb, var(--ink) 32%, transparent);
+    transform-origin: right;
+  }
+  .bar.hl {
+    background: var(--accent);
+  }
+  :global(.js) .bar {
+    transform: scaleX(0);
+    transition: transform 1.2s var(--ease-io) calc(var(--i) * 0.16s);
+  }
+  :global(.js) .chart.in .bar {
+    transform: scaleX(1);
+  }
+  .whisk {
+    position: absolute;
+    top: 14px;
+    height: 0;
+    border-top: 1.5px solid var(--ink);
+    opacity: 0.9;
+  }
+  .whisk::before,
+  .whisk::after {
+    content: '';
+    position: absolute;
+    top: -5px;
+    height: 9px;
+    border-left: 1.5px solid var(--ink);
+  }
+  .whisk::before {
+    left: 0;
+  }
+  .whisk::after {
+    right: 0;
+  }
+  .zc {
+    position: absolute;
+    top: 8px;
+    width: 12px;
+    height: 12px;
+    margin-left: -6px;
+    rotate: 45deg;
+    background: var(--bg);
+    border: 2px solid var(--ok);
+    box-shadow: 0 0 0 2px var(--panel, var(--bg));
+  }
+  .val {
+    font-size: 13px;
+    font-weight: 600;
+    text-align: right;
+  }
+  .axis {
+    display: grid;
+    grid-template-columns: minmax(130px, 0.3fr) 1fr 64px;
+    gap: 14px;
+  }
+  .ticks {
+    position: relative;
+    height: 22px;
+  }
+  .ticks u {
+    position: absolute;
+    translate: -50% 0;
+    text-decoration: none;
+    font: 500 10.5px/1 var(--font-mono);
+    color: var(--faint);
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .legend span {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .k {
+    display: inline-block;
+    position: static;
+  }
+  .k.bar {
+    width: 18px;
+    height: 10px;
+    border-radius: 3px;
+    transform: none;
+    background: color-mix(in srgb, var(--ink) 32%, transparent);
+  }
+  .k.whisk {
+    width: 18px;
+    height: 0;
+    border-top: 1.5px solid var(--ink);
+  }
+  .k.whisk::before,
+  .k.whisk::after {
+    top: -4px;
+    height: 7px;
+  }
+  .k.zc {
+    width: 9px;
+    height: 9px;
+    margin: 0 4px;
+    box-shadow: none;
+  }
+  .tbl {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .tbl summary {
+    width: max-content;
+    padding: 6px 0;
+    cursor: pointer;
+    font: 500 11.5px/1 var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--line);
+  }
+  .tbl table {
+    width: 100%;
+    margin-top: 10px;
+    border-collapse: collapse;
+  }
+  .tbl th,
+  .tbl td {
+    padding: 8px 6px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    font-weight: 400;
+  }
+  .tbl th {
+    font: 600 10.5px var(--font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .src {
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--faint);
+  }
+  @media (max-width: 700px) {
+    .row,
+    .axis {
+      grid-template-columns: 1fr 52px;
+    }
+    .lab {
+      grid-column: 1 / -1;
+    }
+    .axis .spacer:first-child {
+      display: none;
+    }
+    .tbl {
+      overflow-x: auto;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(.js) .bar {
+      transform: none;
+    }
+  }
+</style>

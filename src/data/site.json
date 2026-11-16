@@ -1,0 +1,39 @@
+{
+  "name": "Lucas Ramos",
+  "firstName": "Lucas",
+  "handle": "LordRNR",
+  "url": "https://lordrnr.github.io",
+  "title": "Lucas Ramos — Software, games and research",
+  "description": "Artificial Intelligence student at UC3M who builds games and complete digital products. Every figure comes with its source.",
+  "role": "Artificial Intelligence student at UC3M",
+  "education": {
+    "institution": "Universidad Carlos III de Madrid",
+    "degree": "Bachelor's degree in Artificial Intelligence",
+    "track": "English track",
+    "start": 2026,
+    "expectedEnd": 2030
+  },
+  "location": null,
+  "availability": null,
+  "links": {
+    "github": "https://github.com/LordRNR",
+    "email": null,
+    "linkedin": null
+  },
+  "show": {
+    "email": false
+  },
+  "resume": {
+    "enabled": false,
+    "pdf": null
+  },
+  "hero": {
+    "active": "A",
+    "variants": {
+      "A": ["Ambitious ideas,", "*engineered* into real software."],
+      "B": ["I build games and software.", "Then I *show the evidence*."],
+      "C": ["Games, systems and research,", "*built end to end*."],
+      "D": ["Building ambitious ideas.", "*Engineering* what makes them real."]
+    }
+  }
+}

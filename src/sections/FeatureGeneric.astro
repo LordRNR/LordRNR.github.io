@@ -1,0 +1,65 @@
+---
+import ProjectHead from '../components/ProjectHead.astro';
+import Media from '../components/Media.astro';
+import type { Project } from '../lib/projects';
+
+/** Default home block for any featured project without a bespoke layout. */
+interface Props {
+  project: Project;
+}
+const { project } = Astro.props;
+const d = project.data;
+const href = d.caseStudy.enabled ? `/projects/${project.id}/` : null;
+---
+
+<article class="feature" aria-labelledby={`t-${project.id}`}>
+  <ProjectHead project={project} titleId={`t-${project.id}`} linkTitle />
+  <div class="body">
+    {d.media.hero && <div class="shot"><Media id={d.media.hero} sizes="(min-width: 1000px) 700px, 100vw" /></div>}
+    <div class="text">
+      <p>{d.summary}</p>
+      {href && <a class="link" href={href}>Read the case study <span aria-hidden="true">→</span></a>}
+    </div>
+  </div>
+</article>
+
+<style>
+  .feature {
+    margin-top: clamp(40px, 7vh, 80px);
+  }
+  .body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: clamp(20px, 4vw, 56px);
+    align-items: center;
+  }
+  .shot {
+    overflow: hidden;
+    border-radius: 24px;
+    border: 1px solid var(--line);
+    aspect-ratio: 16 / 10;
+  }
+  .shot :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .text {
+    display: grid;
+    gap: 20px;
+    color: var(--muted);
+    font-size: clamp(16px, 1.2vw, 19px);
+  }
+  .link {
+    width: max-content;
+    color: var(--ink);
+    font-weight: 500;
+    border-bottom: 1px solid var(--line-strong);
+    padding-bottom: 4px;
+  }
+  @media (max-width: 800px) {
+    .body {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

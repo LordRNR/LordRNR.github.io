@@ -1,0 +1,93 @@
+---
+interface Props {
+  big: string;
+  title: string;
+  text: string;
+  source: string;
+  project: string;
+  href?: string | null;
+  wide?: boolean;
+}
+const { big, title, text, source, project, href = null, wide = false } = Astro.props;
+---
+
+<article class:list={['note', { wide }]} data-spot>
+  <p class="big" aria-hidden="true">{big}</p>
+  <h3>{title}</h3>
+  <p class="text">{text}</p>
+  <p class="src mono">{project} · {source}</p>
+  {href && <a class="more" href={href}>See it in context <span aria-hidden="true">→</span></a>}
+</article>
+
+<style>
+  .note {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: clamp(22px, 2.4vw, 34px);
+    min-height: 260px;
+    border-radius: var(--r);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    transition:
+      transform 0.45s var(--ease),
+      border-color 0.4s;
+  }
+  .note::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.4s;
+    background: radial-gradient(420px circle at var(--cx, 50%) var(--cy, 0%), color-mix(in srgb, var(--accent) 17%, transparent), transparent 65%);
+  }
+  .note:hover {
+    transform: translateY(-6px);
+    border-color: var(--line-strong);
+  }
+  .note:hover::before {
+    opacity: 1;
+  }
+  .big {
+    margin-bottom: 8px;
+    font-weight: 650;
+    font-size: clamp(38px, 4.6vw, 68px);
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+  }
+  h3 {
+    font-size: clamp(19px, 1.7vw, 24px);
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    font-weight: 600;
+  }
+  .text {
+    color: var(--muted);
+    font-size: 15.5px;
+    max-width: 42em;
+  }
+  .src {
+    font-size: 10.5px;
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+    color: var(--faint);
+  }
+  .more {
+    width: max-content;
+    margin-top: 2px;
+    font-size: 14px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 2px;
+    transition:
+      color 0.3s,
+      border-color 0.3s;
+  }
+  .more:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+</style>

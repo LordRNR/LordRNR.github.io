@@ -1,0 +1,42 @@
+[
+  {
+    "id": "jtl-district-avenue",
+    "src": "jtl/district-avenue.jpg",
+    "kind": "studio-capture",
+    "verification": "provisional",
+    "alt": "Studio capture of a straight avenue lined with brightly coloured workshops, ending at a clock tower, in the Mechanic District.",
+    "caption": "Mechanic District avenue. Studio capture, Play mode. In-game text is in Spanish."
+  },
+  {
+    "id": "jtl-ratchet-fitting",
+    "src": "jtl/ratchet-fitting.jpg",
+    "kind": "studio-capture",
+    "verification": "provisional",
+    "alt": "Studio capture: the player's test avatar fitting an engine part with a ratchet, with the job panel and tool bar visible.",
+    "caption": "Fitting a part with the ratchet: place it, then hold. Studio capture."
+  },
+  {
+    "id": "jtl-villa-aerial",
+    "src": "jtl/villa-aerial.jpg",
+    "kind": "studio-capture",
+    "verification": "provisional",
+    "alt": "Studio capture: aerial view of Villa Tuercas, a round town with striped market stalls around a central roundabout, with the game interface overlaid.",
+    "caption": "Villa Tuercas, the hub town. Studio capture with the HUD of an earlier build."
+  },
+  {
+    "id": "jtl-district-aerial",
+    "src": "jtl/district-aerial.jpg",
+    "kind": "studio-capture",
+    "verification": "provisional",
+    "alt": "Studio capture: aerial view of the Mechanic District with a scrapyard crane, rows of workshops and a railway viaduct.",
+    "caption": "The Mechanic District from above. Studio capture, Play mode."
+  },
+  {
+    "id": "jtl-trueno-restored",
+    "src": "jtl/trueno-restored.jpg",
+    "kind": "studio-capture",
+    "verification": "provisional",
+    "alt": "Studio capture: a restored red hot rod with a visible engine in the workshop; the job panel reads 'Job completed'.",
+    "caption": "End of the first district loop: the engine starts and the job is paid. Studio capture."
+  }
+]

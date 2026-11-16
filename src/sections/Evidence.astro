@@ -1,0 +1,51 @@
+---
+import SectionHead from '../components/SectionHead.astro';
+import NoteCard from '../components/NoteCard.astro';
+import { getFeatured } from '../lib/projects';
+
+// The home page shows only highlighted notes (max 4); every note appears in full in its case study.
+const featured = await getFeatured();
+const notes = featured
+  .flatMap((p) => p.data.notes.filter((n) => n.highlight).map((n) => ({ n, p })))
+  .slice(0, 4);
+---
+
+{
+  notes.length > 0 && (
+    <section class="sec" id="evidence" aria-labelledby="evidence-h">
+      <div class="wrap">
+        <SectionHead idx="03 — Evidence" id="evidence-h">
+          Things that went wrong, and <em>how I found them</em>.
+        </SectionHead>
+        <div class="grid" data-stagger>
+          {notes.map(({ n, p }) => (
+            <NoteCard
+              big={n.big}
+              title={n.title}
+              text={n.text}
+              source={n.source}
+              project={p.data.name}
+              href={p.data.caseStudy.enabled ? `/projects/${p.id}/#notes` : null}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .sec {
+    padding-block: var(--section-y);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  @media (max-width: 800px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

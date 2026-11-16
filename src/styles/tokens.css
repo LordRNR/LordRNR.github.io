@@ -1,0 +1,55 @@
+/* Design tokens. Dark is the default theme; light is the alternative.
+   Text tokens were checked against WCAG AA (>= 4.5:1) on every background they are used on:
+   dark --faint #7F8B97 >= 4.77:1, light --faint #5E6872 >= 4.61:1. */
+:root {
+  --bg: #07090d;
+  --bg-2: #0b1016;
+  --surface: #10161e;
+  --surface-2: #171f2a;
+  --ink: #f3eee4;
+  --muted: #9aa6b2;
+  --faint: #7f8b97;
+  --line: rgb(243 238 228 / 0.12);
+  --line-strong: rgb(243 238 228 / 0.3);
+  --accent: #8db2ff;
+  --accent-2: #c9d8ff;
+  --ok: #5fe3cf;
+  --signal: #ff8a68;
+  --glass: rgb(16 22 30 / 0.72);
+  --shadow-lg: 0 60px 120px -50px rgb(0 0 0 / 0.8);
+  --grain: 0.05;
+  --tag-tint: 11%; /* status stamp background strength; lower in light so the label keeps AA contrast */
+  color-scheme: dark;
+
+  --font-sans: 'Inter Tight Variable', 'Inter Tight', 'SF Pro Display', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Fraunces Variable', 'Fraunces', 'New York', 'Iowan Old Style', Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+  --nav-h: 68px;
+  --r: 24px;
+  --section-y: clamp(56px, 9vh, 104px);
+  --gutter: clamp(16px, 4vw, 48px);
+}
+
+:root[data-theme='light'] {
+  --bg: #f4efe6;
+  --bg-2: #ede7da;
+  --surface: #fbf8f2;
+  --surface-2: #ffffff;
+  --ink: #10161d;
+  --muted: #55616d;
+  --faint: #5e6872;
+  --line: rgb(16 22 29 / 0.14);
+  --line-strong: rgb(16 22 29 / 0.32);
+  --accent: #2d56d1;
+  --accent-2: #6c8deb;
+  --ok: #0b6e70;
+  --signal: #b8321b;
+  --glass: rgb(251 248 242 / 0.78);
+  --shadow-lg: 0 50px 100px -50px rgb(16 22 29 / 0.35);
+  --grain: 0.035;
+  --tag-tint: 5%;
+  color-scheme: light;
+}

@@ -1,0 +1,25 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import CaseGame from '../../components/case/CaseGame.astro';
+import CaseResearch from '../../components/case/CaseResearch.astro';
+import CaseGeneric from '../../components/case/CaseGeneric.astro';
+import { getResearch } from '../../lib/research';
+
+// One page per project with caseStudy.enabled. The template is chosen from the data, not from the slug.
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.filter((p) => p.data.caseStudy.enabled).map((project) => ({ params: { slug: project.id }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+const t = project.data.caseStudy.template;
+const template = t === 'game' && project.data.chapters.length > 0 ? 'game' : t === 'research' && getResearch(project.id) ? 'research' : 'generic';
+---
+
+<Base title={project.data.name} description={project.data.tagline}>
+  {template === 'game' && <CaseGame project={project} Content={Content} />}
+  {template === 'research' && <CaseResearch project={project} Content={Content} />}
+  {template === 'generic' && <CaseGeneric project={project} Content={Content} />}
+</Base>

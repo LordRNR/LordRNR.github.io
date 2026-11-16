@@ -1,0 +1,30 @@
+---
+import SectionHead from './SectionHead.astro';
+import { parseEmphasis } from '../lib/site';
+
+/** One titled section of a case study. `title` supports *italic accent* words. */
+interface Props {
+  idx: string;
+  id: string;
+  title: string;
+  lede?: string;
+}
+const { idx, id, title, lede } = Astro.props;
+const parts = parseEmphasis(title);
+---
+
+<section class="cs" id={id} aria-labelledby={`${id}-h`}>
+  <div class="wrap">
+    <SectionHead idx={idx} id={`${id}-h`} size="md">
+      {parts.map((p) => (p.em ? <em>{p.text}</em> : p.text))}
+      {lede && <Fragment slot="lede">{lede}</Fragment>}
+    </SectionHead>
+    <slot />
+  </div>
+</section>
+
+<style>
+  .cs {
+    padding-top: var(--section-y);
+  }
+</style>

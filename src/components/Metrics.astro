@@ -1,0 +1,65 @@
+---
+import { fmtDate, formatMetric, type Project } from '../lib/projects';
+
+/** Every figure with its source, date and how it was obtained (measured now vs documented by the project). */
+interface Props {
+  metrics: Project['data']['metrics'];
+}
+const { metrics } = Astro.props;
+---
+
+{
+  metrics.length > 0 && (
+    <ul class="metrics" data-stagger>
+      {metrics.map((m) => (
+        <li class="m">
+          <b>{formatMetric(m)}</b>
+          <span class="label">{m.label}</span>
+          <span class="meta mono">
+            {m.basis === 'measured' ? 'Measured' : 'Documented'} · as of {fmtDate(m.asOf)}
+          </span>
+          <span class="src mono">{m.source}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    gap: 14px;
+  }
+  .m {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 22px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+  b {
+    font: 600 clamp(32px, 3.6vw, 52px) / 1 var(--font-sans);
+    letter-spacing: -0.05em;
+    font-variant-numeric: tabular-nums;
+  }
+  .label {
+    color: var(--ink);
+    font-size: 15px;
+  }
+  .meta {
+    margin-top: 4px;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .src {
+    font-size: 10.5px;
+    line-height: 1.5;
+    color: var(--faint);
+    overflow-wrap: anywhere;
+  }
+</style>

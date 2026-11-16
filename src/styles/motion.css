@@ -1,0 +1,98 @@
+/* Motion primitives. Hidden initial states apply ONLY when JavaScript runs (html.js),
+   so the content is always readable without it. Everything uses transform/opacity.
+   prefers-reduced-motion removes all of it at the bottom of this file. */
+
+.js [data-reveal] {
+  opacity: 0;
+  translate: 0 28px;
+  transition:
+    opacity 0.8s var(--ease),
+    translate 0.8s var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .js [data-reveal] {
+    filter: blur(6px);
+    transition:
+      opacity 0.8s var(--ease),
+      translate 0.8s var(--ease),
+      filter 0.8s var(--ease);
+  }
+}
+.js [data-reveal].in {
+  opacity: 1;
+  translate: 0 0;
+  filter: none;
+}
+
+.js [data-stagger] > * {
+  opacity: 0;
+  translate: 0 32px;
+  transition:
+    opacity 0.75s var(--ease) calc(var(--i, 0) * 90ms),
+    translate 0.75s var(--ease) calc(var(--i, 0) * 90ms);
+}
+.js [data-stagger].in > * {
+  opacity: 1;
+  translate: 0 0;
+}
+
+/* Hairline that draws itself above a section header. */
+.draw {
+  position: relative;
+}
+.draw::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: var(--ink);
+  opacity: 0.5;
+}
+.js .draw::before {
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.2s var(--ease-io);
+}
+.js .draw.in::before {
+  transform: scaleX(1);
+}
+
+/* Theme change: circular reveal (only while html.theme-vt is set by theme.ts). */
+html.theme-vt::view-transition-old(root),
+html.theme-vt::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html.theme-vt::view-transition-new(root) {
+  animation: theme-reveal 0.75s var(--ease-io) both;
+}
+@keyframes theme-reveal {
+  from {
+    clip-path: circle(0 at var(--vx, 50%) var(--vy, 0));
+  }
+  to {
+    clip-path: circle(150vmax at var(--vx, 50%) var(--vy, 0));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+  .js [data-reveal],
+  .js [data-stagger] > * {
+    opacity: 1 !important;
+    translate: none !important;
+    filter: none !important;
+  }
+  .js .draw::before {
+    transform: none !important;
+  }
+}

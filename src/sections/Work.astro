@@ -1,0 +1,54 @@
+---
+import SectionHead from '../components/SectionHead.astro';
+import FeatureGame from './FeatureGame.astro';
+import FeatureResearch from './FeatureResearch.astro';
+import FeatureGeneric from './FeatureGeneric.astro';
+import { getFeatured, getProjects } from '../lib/projects';
+import { getResearch } from '../lib/research';
+
+// Featured projects are rendered automatically, in `order`. A new project needs no change here.
+const featured = await getFeatured();
+const total = (await getProjects()).length;
+---
+
+<section class="sec" id="work" aria-labelledby="work-h">
+  <div class="wrap">
+    <SectionHead idx="02 — Work" id="work-h">Projects, <em>shown with their evidence</em>.</SectionHead>
+    {
+      featured.map((p) => {
+        const t = p.data.caseStudy.template;
+        if (t === 'game' && p.data.chapters.length > 0) return <FeatureGame project={p} />;
+        if (t === 'research' && getResearch(p.id)) return <FeatureResearch project={p} />;
+        return <FeatureGeneric project={p} />;
+      })
+    }
+    <p class="all">
+      <a href="/projects/">All projects ({total}) <span aria-hidden="true">→</span></a>
+    </p>
+  </div>
+</section>
+
+<style>
+  .sec {
+    padding-block: var(--section-y);
+  }
+  .all {
+    margin-top: clamp(36px, 6vh, 64px);
+  }
+  .all a {
+    display: inline-flex;
+    gap: 8px;
+    padding: 12px 0;
+    font-weight: 500;
+    border-bottom: 1px solid var(--line-strong);
+    transition:
+      color 0.3s,
+      gap 0.3s,
+      border-color 0.3s;
+  }
+  .all a:hover {
+    gap: 14px;
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+</style>

@@ -1,0 +1,40 @@
+---
+import { Picture } from 'astro:assets';
+import { getMedia } from '../lib/media';
+
+/**
+ * Renders any registered medium by id. Images become responsive <picture> (AVIF/WebP + JPEG fallback,
+ * srcset, width/height set by Astro). Videos render <video controls preload="none"> with a poster.
+ * `decorative` is for pure duplicates of an image already described elsewhere (alt="").
+ */
+interface Props {
+  id: string;
+  sizes?: string;
+  priority?: boolean; // hero/LCP image: eager + fetchpriority=high
+  decorative?: boolean;
+  widths?: number[];
+}
+const { id, sizes = '(min-width: 1000px) 1200px, 100vw', priority = false, decorative = false, widths = [480, 768, 1200, 1600] } = Astro.props;
+const m = getMedia(id);
+---
+
+{
+  m.type === 'image' ? (
+    <Picture
+      src={m.image}
+      alt={decorative ? '' : m.entry.alt}
+      formats={['avif', 'webp']}
+      fallbackFormat="jpeg"
+      widths={widths}
+      sizes={sizes}
+      loading={priority ? 'eager' : 'lazy'}
+      fetchpriority={priority ? 'high' : 'auto'}
+      decoding="async"
+    />
+  ) : (
+    <video controls preload="none" playsinline poster={m.poster && m.poster.type === 'image' ? m.poster.image.src : undefined} aria-label={m.entry.alt}>
+      <source src={m.videoSrc} />
+      <p>Your browser cannot play this video. <a href={m.videoSrc}>Download it</a>.</p>
+    </video>
+  )
+}

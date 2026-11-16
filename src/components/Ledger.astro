@@ -1,0 +1,168 @@
+---
+import Tag from './Tag.astro';
+
+export interface LedgerRow {
+  project: string;
+  claim: string;
+  detail?: string;
+  state: 'implemented' | 'tested' | 'pending';
+}
+interface Props {
+  rows: LedgerRow[];
+  title?: string;
+}
+const { rows, title = 'The ledger' } = Astro.props;
+const count = (s: string) => (s === 'all' ? rows.length : rows.filter((r) => r.state === s).length);
+const chips = [
+  { f: 'all', label: 'All' },
+  { f: 'implemented', label: 'Implemented' },
+  { f: 'tested', label: 'Tested' },
+  { f: 'pending', label: 'Pending' },
+];
+---
+
+<div class="ledger" data-ledger>
+  <div class="top">
+    <h3 class="mono">{title}</h3>
+    <div class="chips" role="group" aria-label="Filter by status">
+      {
+        chips.map((c) => (
+          <button class="chip" type="button" data-f={c.f} aria-pressed={c.f === 'all' ? 'true' : 'false'}>
+            {c.label} <em>{count(c.f)}</em>
+          </button>
+        ))
+      }
+    </div>
+  </div>
+  <p class="sr-only" role="status" aria-live="polite" data-ledger-status></p>
+  <ul class="rows">
+    {
+      rows.map((r) => (
+        <li class="row" data-s={r.state}>
+          <span class="pj mono">{r.project}</span>
+          <div class="tx">
+            <b>{r.claim}</b>
+            {r.detail && <span>{r.detail}</span>}
+          </div>
+          <Tag state={r.state} />
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<script>
+  import '../scripts/ledger.ts';
+</script>
+
+<style>
+  .ledger {
+    border-radius: 28px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    padding: clamp(18px, 2.4vw, 32px);
+  }
+  .top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  h3 {
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chip {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    min-height: 40px;
+    padding: 9px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: transparent;
+    font: 500 12px/1 var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    transition:
+      background 0.3s,
+      color 0.3s,
+      border-color 0.3s;
+  }
+  .chip:hover {
+    color: var(--ink);
+    border-color: var(--line-strong);
+  }
+  .chip[aria-pressed='true'] {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+  .chip em {
+    font-style: normal;
+    opacity: 0.7;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: minmax(120px, 0.22fr) minmax(0, 1fr) auto;
+    gap: 8px 24px;
+    align-items: center;
+    padding: 14px 0;
+    border-top: 1px solid var(--line);
+    max-height: 180px;
+    overflow: hidden;
+    transition:
+      max-height 0.55s var(--ease),
+      opacity 0.4s,
+      padding 0.55s var(--ease),
+      border-color 0.4s,
+      translate 0.5s var(--ease);
+  }
+  .row.hide {
+    max-height: 0;
+    opacity: 0;
+    padding-block: 0;
+    border-color: transparent;
+    translate: 0 -8px;
+    pointer-events: none;
+  }
+  .pj {
+    font-size: 11px;
+    line-height: 1.4;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .tx b {
+    display: block;
+    font-weight: 520;
+    letter-spacing: -0.01em;
+  }
+  .tx span {
+    display: block;
+    margin-top: 2px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  @media (max-width: 760px) {
+    .row {
+      grid-template-columns: 1fr auto;
+    }
+    .pj {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

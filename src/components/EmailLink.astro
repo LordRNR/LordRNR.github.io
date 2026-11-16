@@ -1,0 +1,40 @@
+---
+/**
+ * Shows "Show email" and only builds the mailto link when it is clicked, so the address is not written in the HTML
+ * (a basic defence against address harvesters, no third-party service). Without JavaScript it explains the alternative.
+ * Rendered only when site.json has links.email set AND show.email true; today neither is the case.
+ */
+interface Props {
+  email: string;
+}
+const { email } = Astro.props;
+const [user, domain] = email.split('@');
+---
+
+<button type="button" class="reveal" data-email data-u={user} data-d={domain}>Show email address</button>
+<noscript><span class="noscript">Email is shown with JavaScript on. Meanwhile, GitHub works.</span></noscript>
+
+<script>
+  import '../scripts/email.ts';
+</script>
+
+<style>
+  .reveal {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+    text-decoration-thickness: 1px;
+  }
+  .reveal:hover {
+    color: var(--accent);
+  }
+  .noscript {
+    color: var(--muted);
+    font-size: 14px;
+  }
+</style>

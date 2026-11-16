@@ -1,0 +1,50 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Page not found" noindex>
+  <section class="wrap nf">
+    <p class="mono code">404</p>
+    <h1>That page does not <em>exist</em>.</h1>
+    <p class="muted">The link may be old, or the project may not be published yet.</p>
+    <p class="go"><a href="/">Home</a><a href="/projects/">Projects</a></p>
+  </section>
+</Base>
+
+<style>
+  .nf {
+    min-height: 70svh;
+    display: grid;
+    align-content: center;
+    gap: 18px;
+    padding-top: var(--nav-h);
+  }
+  .code {
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+  }
+  h1 {
+    max-width: 12em;
+    font-weight: 650;
+    font-size: clamp(40px, 7vw, 100px);
+    line-height: 0.98;
+    letter-spacing: -0.05em;
+  }
+  h1 em {
+    font: italic 500 1.02em var(--font-serif);
+    color: var(--accent);
+  }
+  .muted {
+    color: var(--muted);
+  }
+  .go {
+    display: flex;
+    gap: 24px;
+  }
+  .go a {
+    padding: 10px 0;
+    font-weight: 500;
+    border-bottom: 1px solid var(--line-strong);
+  }
+</style>

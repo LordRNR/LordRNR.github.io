@@ -1,0 +1,130 @@
+---
+import SectionHead from '../components/SectionHead.astro';
+import EmailLink from '../components/EmailLink.astro';
+import { copy } from '../data/copy';
+import { contact, site } from '../lib/site';
+import { getFeatured } from '../lib/projects';
+
+const featured = await getFeatured();
+const star = featured[0];
+const now = star?.data.roadmap[0];
+---
+
+<section class="sec contact" id="contact" aria-labelledby="contact-h">
+  <div class="wrap">
+    <SectionHead idx="06 — Contact" id="contact-h">
+      Want to see how it works <em>under the hood</em>?
+      <Fragment slot="lede">{copy.contact.lede}</Fragment>
+    </SectionHead>
+    <div class="row">
+      <dl class="now" data-stagger>
+        {now && <div><dt>Now</dt><dd>{star.data.name} · {now}</dd></div>}
+        {site.availability && <div><dt>Next</dt><dd>{site.availability}</dd></div>}
+        {star?.data.privateNote && <div><dt>Code</dt><dd>{star.data.privateNote}</dd></div>}
+      </dl>
+      <div class="links" data-reveal>
+        <a class="btn primary" data-mag href={contact.github} rel="noopener">
+          github.com/{site.handle}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg>
+        </a>
+        {contact.email && <span class="btn ghost"><EmailLink email={contact.email} /></span>}
+        {contact.linkedin && <a class="btn ghost" data-mag href={contact.linkedin} rel="noopener">LinkedIn</a>}
+        {site.resume.pdf && <a class="btn ghost" data-mag href={site.resume.pdf} download>Download CV</a>}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .sec {
+    padding-block: var(--section-y);
+  }
+  .contact {
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+  }
+  .contact::before {
+    content: '';
+    position: absolute;
+    inset: auto -10% -30% -10%;
+    height: 70%;
+    z-index: -1;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 24%, transparent), transparent 70%);
+    opacity: 0.7;
+  }
+  .contact :global(h2) {
+    font-size: clamp(36px, 7vw, 108px);
+    line-height: 0.95;
+    max-width: 12em;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 32px;
+    align-items: end;
+  }
+  .now {
+    margin: 0;
+    max-width: 38em;
+    border-top: 1px solid var(--line);
+  }
+  .now > div {
+    display: flex;
+    gap: 16px;
+    align-items: baseline;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  dt {
+    min-width: 64px;
+    font: 500 11px/1 var(--font-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  dd {
+    margin: 0;
+    color: var(--muted);
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 14px 24px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    font-weight: 500;
+    font-size: 15px;
+    transition:
+      background 0.35s var(--ease),
+      border-color 0.35s,
+      color 0.35s,
+      translate 0.3s var(--ease);
+  }
+  .primary {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+  .primary:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+  }
+  .ghost:hover {
+    background: color-mix(in srgb, var(--ink) 8%, transparent);
+    border-color: var(--ink);
+  }
+  @media (max-width: 900px) {
+    .row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

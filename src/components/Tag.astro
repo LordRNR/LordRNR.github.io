@@ -1,0 +1,109 @@
+---
+/** Status stamp. Colour is never the only signal: every state has its own icon shape and a text label. */
+interface Props {
+  state: 'implemented' | 'tested' | 'pending' | 'in-development' | 'completed' | 'archived' | 'planned';
+  label?: string;
+  small?: boolean;
+}
+const { state, label, small = false } = Astro.props;
+const defaults: Record<Props['state'], string> = {
+  implemented: 'Implemented',
+  tested: 'Tested',
+  pending: 'Pending',
+  'in-development': 'In development',
+  completed: 'Completed',
+  archived: 'Archived',
+  planned: 'Planned',
+};
+---
+
+<span class:list={['tag', state, { small }]}><i aria-hidden="true"></i>{label ?? defaults[state]}</span>
+
+<style>
+  .tag {
+    --c: var(--ink);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 11px 6px;
+    border-radius: 999px;
+    font: 600 10.5px/1 var(--font-mono);
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--c);
+    background: color-mix(in srgb, var(--c) var(--tag-tint, 11%), transparent);
+    border: 1px solid color-mix(in srgb, var(--c) 38%, transparent);
+  }
+  .tag.small {
+    padding: 5px 9px 4px;
+    font-size: 9.5px;
+  }
+  i {
+    display: block;
+    width: 8px;
+    height: 8px;
+    flex: none;
+  }
+  .implemented {
+    --c: var(--ink);
+  }
+  .implemented i {
+    border: 1.5px solid currentColor;
+    rotate: 45deg;
+    border-radius: 1px;
+  }
+  .tested,
+  .completed {
+    --c: var(--ok);
+  }
+  .tested i,
+  .completed i {
+    background: currentColor;
+    border-radius: 50%;
+  }
+  .pending {
+    --c: var(--signal);
+  }
+  .pending i {
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+  }
+  .in-development {
+    --c: var(--accent);
+  }
+  .in-development i {
+    background: currentColor;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent);
+    animation: ping 2.4s infinite;
+  }
+  .archived {
+    --c: var(--muted);
+  }
+  .archived i {
+    border-top: 2px solid currentColor;
+    height: 0;
+    margin-top: 1px;
+  }
+  .planned {
+    --c: var(--muted);
+  }
+  .planned i {
+    border: 1.5px dashed currentColor;
+    border-radius: 50%;
+  }
+  @keyframes ping {
+    70% {
+      box-shadow: 0 0 0 9px transparent;
+    }
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .in-development i {
+      animation: none;
+    }
+  }
+</style>
